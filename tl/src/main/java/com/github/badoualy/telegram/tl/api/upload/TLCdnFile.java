@@ -1,23 +1,18 @@
 package com.github.badoualy.telegram.tl.api.upload;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLBytes;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLCdnFile extends TLAbsCdnFile {
-
     public static final int CONSTRUCTOR_ID = 0xa99fca4f;
 
     protected TLBytes bytes;

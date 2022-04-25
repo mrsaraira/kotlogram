@@ -1,59 +1,52 @@
 package com.github.badoualy.telegram.tl.api.messages;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsDocument;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLSavedGifs extends TLAbsSavedGifs {
+    public static final int CONSTRUCTOR_ID = 0x84a02a0d;
 
-    public static final int CONSTRUCTOR_ID = 0x2e0709a5;
-
-    protected int hash;
+    protected long hash;
 
     protected TLVector<TLAbsDocument> gifs;
 
-    private final String _constructor = "messages.savedGifs#2e0709a5";
+    private final String _constructor = "messages.savedGifs#84a02a0d";
 
     public TLSavedGifs() {
     }
 
-    public TLSavedGifs(int hash, TLVector<TLAbsDocument> gifs) {
+    public TLSavedGifs(long hash, TLVector<TLAbsDocument> gifs) {
         this.hash = hash;
         this.gifs = gifs;
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
-        writeInt(hash, stream);
+        writeLong(hash, stream);
         writeTLVector(gifs, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        hash = readInt(stream);
+        hash = readLong(stream);
         gifs = readTLVector(stream, context);
     }
 
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
         size += gifs.computeSerializedSize();
         return size;
     }
@@ -68,11 +61,11 @@ public class TLSavedGifs extends TLAbsSavedGifs {
         return CONSTRUCTOR_ID;
     }
 
-    public int getHash() {
+    public long getHash() {
         return hash;
     }
 
-    public void setHash(int hash) {
+    public void setHash(long hash) {
         this.hash = hash;
     }
 

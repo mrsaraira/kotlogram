@@ -1,29 +1,25 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.TLAbsInputBotInlineMessageID;
 import com.github.badoualy.telegram.tl.api.TLAbsInputUser;
-import com.github.badoualy.telegram.tl.api.TLInputBotInlineMessageID;
 import com.github.badoualy.telegram.tl.api.messages.TLHighScores;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLRequestMessagesGetInlineGameHighScores extends TLMethod<TLHighScores> {
-
     public static final int CONSTRUCTOR_ID = 0xf635e1b;
 
-    protected TLInputBotInlineMessageID id;
+    protected TLAbsInputBotInlineMessageID id;
 
     protected TLAbsInputUser userId;
 
@@ -32,7 +28,7 @@ public class TLRequestMessagesGetInlineGameHighScores extends TLMethod<TLHighSco
     public TLRequestMessagesGetInlineGameHighScores() {
     }
 
-    public TLRequestMessagesGetInlineGameHighScores(TLInputBotInlineMessageID id, TLAbsInputUser userId) {
+    public TLRequestMessagesGetInlineGameHighScores(TLAbsInputBotInlineMessageID id, TLAbsInputUser userId) {
         this.id = id;
         this.userId = userId;
     }
@@ -45,9 +41,7 @@ public class TLRequestMessagesGetInlineGameHighScores extends TLMethod<TLHighSco
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLHighScores)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLHighScores) response;
     }
@@ -61,7 +55,7 @@ public class TLRequestMessagesGetInlineGameHighScores extends TLMethod<TLHighSco
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        id = readTLObject(stream, context, TLInputBotInlineMessageID.class, TLInputBotInlineMessageID.CONSTRUCTOR_ID);
+        id = readTLObject(stream, context, TLAbsInputBotInlineMessageID.class, -1);
         userId = readTLObject(stream, context, TLAbsInputUser.class, -1);
     }
 
@@ -83,11 +77,11 @@ public class TLRequestMessagesGetInlineGameHighScores extends TLMethod<TLHighSco
         return CONSTRUCTOR_ID;
     }
 
-    public TLInputBotInlineMessageID getId() {
+    public TLAbsInputBotInlineMessageID getId() {
         return id;
     }
 
-    public void setId(TLInputBotInlineMessageID id) {
+    public void setId(TLAbsInputBotInlineMessageID id) {
         this.id = id;
     }
 

@@ -5,11 +5,11 @@ import com.github.badoualy.telegram.mtproto.MTProtoHandler
 import com.github.badoualy.telegram.tl.api.*
 import com.github.badoualy.telegram.tl.api.auth.TLAuthorization
 import com.github.badoualy.telegram.tl.api.auth.TLSentCode
-import com.github.badoualy.telegram.tl.api.request.TLRequestUploadGetFile
-import com.github.badoualy.telegram.tl.api.upload.TLFile
 import com.github.badoualy.telegram.tl.core.TLBytes
 import com.github.badoualy.telegram.tl.core.TLMethod
 import com.github.badoualy.telegram.tl.core.TLObject
+
+
 import com.github.badoualy.telegram.tl.exception.RpcErrorException
 import rx.Observable
 import java.io.IOException
@@ -73,14 +73,14 @@ interface TelegramClient : TelegramApi {
 
     @Deprecated("Use authSendCode for more convenience",
                 ReplaceWith("authSendCode(allowFlashcall, phoneNumber, currentNumber)"))
-    override fun authSendCode(allowFlashcall: Boolean, phoneNumber: String?, currentNumber: Boolean, apiId: Int, apiHash: String?): TLSentCode
+    fun authSendCode(allowFlashcall: Boolean, phoneNumber: String?, currentNumber: Boolean, apiId: Int, apiHash: String?): TLSentCode
 
     /** Convenience method wrapping the argument with salt */
     @Throws(RpcErrorException::class, IOException::class)
     fun authCheckPassword(password: String): TLAuthorization
 
     @Deprecated("Use authCheckPassword for more convenience", ReplaceWith("authCheckPassword()"))
-    override fun authCheckPassword(passwordHash: TLBytes?): TLAuthorization
+    fun authCheckPassword(passwordHash: TLBytes?): TLAuthorization
 
     @Throws(RpcErrorException::class, IOException::class)
     override fun <T : TLObject?> invokeWithLayer(layer: Int, query: TLMethod<T>?): T
@@ -91,59 +91,59 @@ interface TelegramClient : TelegramApi {
     fun <T : TLObject> initConnection(query: TLMethod<T>): T
 
     @Deprecated("Use initConnection for more convenience", ReplaceWith("initConnection(query)"))
-    override fun <T : TLObject?> initConnection(apiId: Int, deviceModel: String, systemVersion: String, appVersion: String, langCode: String, query: TLMethod<T>): T
+    fun <T : TLObject?> initConnection(apiId: Int, deviceModel: String, systemVersion: String, appVersion: String, langCode: String, query: TLMethod<T>): T
 
     /** Convenience method wrapping the argument for a plain text message */
     fun messagesSendMessage(peer: TLAbsInputPeer, message: String, randomId: Long): TLAbsUpdates?
 
     /** Convenience method to downloadSync an user profile photo */
-    @Throws(RpcErrorException::class, IOException::class)
-    fun getUserPhoto(user: TLAbsUser, big: Boolean = true): TLFile? {
-        val userPhoto = when (user) {
-            is TLUser -> user.photo
-            is TLUserEmpty -> null
-            else -> null
-        } ?: return null
+//    @Throws(RpcErrorException::class, IOException::class)
+//    fun getUserPhoto(user: TLAbsUser, big: Boolean = true): TLFile? {
+//        val userPhoto = when (user) {
+//            is TLUser -> user.photo
+//            is TLUserEmpty -> null
+//            else -> null
+//        } ?: return null
 
-        val photoLocation = (when (userPhoto) {
-            is TLUserProfilePhoto -> if (big) userPhoto.photoBig else userPhoto.photoSmall
-            else -> null
-        } ?: return null) as? TLFileLocation ?: return null
+//        val photoLocation = (when (userPhoto) {
+//            is TLUserProfilePhoto -> userPhoto.strippedThumb
+//            else -> null
+//        } ?: return null) as? TLFileLocation ?: return null
 
-        val inputLocation = TLInputFileLocation(photoLocation.volumeId, photoLocation.localId,
-                                                photoLocation.secret)
-        val request = TLRequestUploadGetFile(inputLocation, 0, 0)
-        return executeRpcQuery(request, photoLocation.dcId) as? TLFile
-                // TODO: handle CDN
-                ?: throw IOException("Unhandled CDN redirection")
-    }
+//        val inputLocation = TLInputFileLocation(photoLocation.volumeId, photoLocation.localId,
+//                                                photoLocation.secret)
+//        val request = TLRequestUploadGetFile(inputLocation, 0, 0)
+//        return executeRpcQuery(request, photoLocation.dcId) as? TLFile
+//                 TODO: handle CDN
+//                ?: throw IOException("Unhandled CDN redirection")
+//    }
 
     /** Convenience method to downloadSync a chat photo */
-    @Throws(RpcErrorException::class, IOException::class)
-    fun getChatPhoto(chat: TLAbsChat, big: Boolean = true): TLFile? {
-        val chatPhoto = when (chat) {
-            is TLChat -> chat.photo
-            is TLChannel -> chat.photo
-            is TLChatEmpty, is TLChatForbidden -> null
-            else -> null
-        } ?: return null
+//    @Throws(RpcErrorException::class, IOException::class)
+//    fun getChatPhoto(chat: TLAbsChat, big: Boolean = true): TLFile? {
+//        val chatPhoto = when (chat) {
+//            is TLChat -> chat.photo
+//            is TLChannel -> chat.photo
+//            is TLChatEmpty, is TLChatForbidden -> null
+//            else -> null
+//        } ?: return null
 
-        val photoLocation = (when (chatPhoto) {
-            is TLChatPhoto -> if (big) chatPhoto.photoBig else chatPhoto.photoSmall
-            else -> null
-        } ?: return null) as? TLFileLocation ?: return null
+//        val photoLocation = (when (chatPhoto) {
+//            is TLChatPhoto -> if (big) chatPhoto.photoBig else chatPhoto.photoSmall
+//            else -> null
+//        } ?: return null) as? TLFileLocation ?: return null
 
-        val inputLocation = TLInputFileLocation(photoLocation.volumeId, photoLocation.localId,
-                                                photoLocation.secret)
-        val request = TLRequestUploadGetFile(inputLocation, 0, 0)
-        return executeRpcQuery(request, photoLocation.dcId)as? TLFile
-                // TODO: handle CDN
-                ?: throw IOException("Unhandled CDN redirection")
-    }
+//        val inputLocation = TLInputFileLocation(photoLocation.volumeId, photoLocation.localId,
+//                                                photoLocation.secret)
+//        val request = TLRequestUploadGetFile(inputLocation, 0, 0)
+//        return executeRpcQuery(request, photoLocation.dcId)as? TLFile
+//                 TODO: handle CDN
+//                ?: throw IOException("Unhandled CDN redirection")
+//    }
 
     /** Convenience method to downloadSync a channel photo */
-    @Throws(RpcErrorException::class, IOException::class)
-    fun getChannelPhoto(chat: TLAbsChat, big: Boolean = true) = getChatPhoto(chat, big)
+//    @Throws(RpcErrorException::class, IOException::class)
+//    fun getChannelPhoto(chat: TLAbsChat, big: Boolean = true) = getChatPhoto(chat, big)
 
     /** Convenience method to download a file synchronously */
     @Throws(RpcErrorException::class, IOException::class)

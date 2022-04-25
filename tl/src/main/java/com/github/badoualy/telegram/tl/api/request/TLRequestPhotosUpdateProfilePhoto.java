@@ -1,30 +1,26 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputPhoto;
-import com.github.badoualy.telegram.tl.api.TLAbsUserProfilePhoto;
+import com.github.badoualy.telegram.tl.api.photos.TLPhoto;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
-public class TLRequestPhotosUpdateProfilePhoto extends TLMethod<TLAbsUserProfilePhoto> {
-
-    public static final int CONSTRUCTOR_ID = 0xf0bb5152;
+public class TLRequestPhotosUpdateProfilePhoto extends TLMethod<TLPhoto> {
+    public static final int CONSTRUCTOR_ID = 0x72d4742c;
 
     protected TLAbsInputPhoto id;
 
-    private final String _constructor = "photos.updateProfilePhoto#f0bb5152";
+    private final String _constructor = "photos.updateProfilePhoto#72d4742c";
 
     public TLRequestPhotosUpdateProfilePhoto() {
     }
@@ -35,17 +31,15 @@ public class TLRequestPhotosUpdateProfilePhoto extends TLMethod<TLAbsUserProfile
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
-    public TLAbsUserProfilePhoto deserializeResponse(InputStream stream, TLContext context) throws IOException {
+    public TLPhoto deserializeResponse(InputStream stream, TLContext context) throws IOException {
         final TLObject response = readTLObject(stream, context);
         if (response == null) {
             throw new IOException("Unable to parse response");
         }
-        if (!(response instanceof TLAbsUserProfilePhoto)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+        if (!(response instanceof TLPhoto)) {
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
-        return (TLAbsUserProfilePhoto) response;
+        return (TLPhoto) response;
     }
 
     @Override

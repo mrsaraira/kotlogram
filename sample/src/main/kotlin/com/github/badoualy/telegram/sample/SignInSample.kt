@@ -3,13 +3,15 @@ package com.github.badoualy.telegram.sample
 import com.github.badoualy.telegram.api.Kotlogram
 import com.github.badoualy.telegram.sample.config.Config
 import com.github.badoualy.telegram.sample.config.FileApiStorage
+import com.github.badoualy.telegram.tl.api.auth.TLAuthorization
 import com.github.badoualy.telegram.tl.exception.RpcErrorException
 import java.io.IOException
 import java.util.*
 
 object SignInSample {
 
-    @JvmStatic fun main(args: Array<String>) {
+    @JvmStatic
+    fun main(args: Array<String>) {
         // This is a synchronous client, that will block until the response arrive (or until timeout)
         val client = Kotlogram.getDefaultClient(Config.application, FileApiStorage())
 
@@ -22,18 +24,18 @@ object SignInSample {
 
             // Auth with the received code
             val authorization =
-                    try {
-                        client.authSignIn(Config.phoneNumber, sentCode.phoneCodeHash, code)
-                    } catch (e: RpcErrorException) {
-                        if (e.tag.equals("SESSION_PASSWORD_NEEDED", true)) {
-                            // We receive this error is two-step auth is enabled
-                            println("Two-step auth password: ")
-                            val password = Scanner(System.`in`).nextLine()
-                            client.authCheckPassword(password)
-                        } else throw e
-                    }
+                try {
+                    client.authSignIn(Config.phoneNumber, sentCode.phoneCodeHash, code)
+                } catch (e: RpcErrorException) {
+                    if (e.tag.equals("SESSION_PASSWORD_NEEDED", true)) {
+                        // We receive this error is two-step auth is enabled
+                        println("Two-step auth password: ")
+                        val password = Scanner(System.`in`).nextLine()
+                        client.authCheckPassword(password)
+                    } else throw e
+                }
 
-            authorization.user.asUser.apply {
+            (authorization as TLAuthorization).user.asUser.apply {
                 println("You are now signed in as $firstName $lastName @$username")
             }
         } catch (e: RpcErrorException) {
@@ -41,6 +43,9 @@ object SignInSample {
         } catch (e: IOException) {
             e.printStackTrace()
         } finally {
+            while (true) {
+                Thread.sleep(400)
+            }
             client.close() // Important, do not forget this, or your process won't finish
         }
     }

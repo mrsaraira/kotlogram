@@ -1,29 +1,29 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.core.TLObject;
 
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLUser}: user#2e13f4c3</li>
- * <li>{@link TLUserEmpty}: userEmpty#200250ba</li>
+ * <li>{@link TLUser}: user#3ff6ecb0</li>
+ * <li>{@link TLUserEmpty}: userEmpty#d3bc4b7a</li>
  * </ul>
  *
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public abstract class TLAbsUser extends TLObject {
-
-    protected int id;
+    protected long id;
 
     public TLAbsUser() {
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

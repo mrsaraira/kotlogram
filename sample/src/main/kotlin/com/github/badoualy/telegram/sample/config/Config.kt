@@ -17,7 +17,7 @@ object Config {
                                   CONFIG_FILE)))
     }
 
-    val apiId = getProp("apiId", "0").toIntOrNull() ?: 0
+    val apiId = getProp("apiId", "").toIntOrNull() ?: 0
     val apiHash = getProp("apiHash", "")
 
     val deviceModel = getProp("deviceModel",
@@ -29,7 +29,7 @@ object Config {
     val langCode = getProp("langCode", "en")
 
     val phoneNumber = getProp("phoneNumber",
-                              "+33000000000")
+                              "")
 
     val application = TelegramApp(apiId,
                                   apiHash,

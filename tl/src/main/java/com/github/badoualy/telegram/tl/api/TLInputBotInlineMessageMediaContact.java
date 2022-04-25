@@ -1,28 +1,18 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLInputBotInlineMessageMediaContact extends TLAbsInputBotInlineMessage {
-
-    public static final int CONSTRUCTOR_ID = 0x2daf01a7;
+    public static final int CONSTRUCTOR_ID = 0xa6edbffd;
 
     protected String phoneNumber;
 
@@ -30,15 +20,18 @@ public class TLInputBotInlineMessageMediaContact extends TLAbsInputBotInlineMess
 
     protected String lastName;
 
-    private final String _constructor = "inputBotInlineMessageMediaContact#2daf01a7";
+    protected String vcard;
+
+    private final String _constructor = "inputBotInlineMessageMediaContact#a6edbffd";
 
     public TLInputBotInlineMessageMediaContact() {
     }
 
-    public TLInputBotInlineMessageMediaContact(String phoneNumber, String firstName, String lastName, TLAbsReplyMarkup replyMarkup) {
+    public TLInputBotInlineMessageMediaContact(String phoneNumber, String firstName, String lastName, String vcard, TLAbsReplyMarkup replyMarkup) {
         this.phoneNumber = phoneNumber;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.vcard = vcard;
         this.replyMarkup = replyMarkup;
     }
 
@@ -55,6 +48,7 @@ public class TLInputBotInlineMessageMediaContact extends TLAbsInputBotInlineMess
         writeString(phoneNumber, stream);
         writeString(firstName, stream);
         writeString(lastName, stream);
+        writeString(vcard, stream);
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
             writeTLObject(replyMarkup, stream);
@@ -68,6 +62,7 @@ public class TLInputBotInlineMessageMediaContact extends TLAbsInputBotInlineMess
         phoneNumber = readTLString(stream);
         firstName = readTLString(stream);
         lastName = readTLString(stream);
+        vcard = readTLString(stream);
         replyMarkup = (flags & 4) != 0 ? readTLObject(stream, context, TLAbsReplyMarkup.class, -1) : null;
     }
 
@@ -80,6 +75,7 @@ public class TLInputBotInlineMessageMediaContact extends TLAbsInputBotInlineMess
         size += computeTLStringSerializedSize(phoneNumber);
         size += computeTLStringSerializedSize(firstName);
         size += computeTLStringSerializedSize(lastName);
+        size += computeTLStringSerializedSize(vcard);
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
             size += replyMarkup.computeSerializedSize();
@@ -119,6 +115,14 @@ public class TLInputBotInlineMessageMediaContact extends TLAbsInputBotInlineMess
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getVcard() {
+        return vcard;
+    }
+
+    public void setVcard(String vcard) {
+        this.vcard = vcard;
     }
 
     public TLAbsReplyMarkup getReplyMarkup() {

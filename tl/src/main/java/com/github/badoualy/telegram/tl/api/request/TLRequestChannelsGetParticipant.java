@@ -1,40 +1,36 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputChannel;
-import com.github.badoualy.telegram.tl.api.TLAbsInputUser;
+import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
 import com.github.badoualy.telegram.tl.api.channels.TLChannelParticipant;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLRequestChannelsGetParticipant extends TLMethod<TLChannelParticipant> {
-
-    public static final int CONSTRUCTOR_ID = 0x546dd7a6;
+    public static final int CONSTRUCTOR_ID = 0xa0ab6cc6;
 
     protected TLAbsInputChannel channel;
 
-    protected TLAbsInputUser userId;
+    protected TLAbsInputPeer participant;
 
-    private final String _constructor = "channels.getParticipant#546dd7a6";
+    private final String _constructor = "channels.getParticipant#a0ab6cc6";
 
     public TLRequestChannelsGetParticipant() {
     }
 
-    public TLRequestChannelsGetParticipant(TLAbsInputChannel channel, TLAbsInputUser userId) {
+    public TLRequestChannelsGetParticipant(TLAbsInputChannel channel, TLAbsInputPeer participant) {
         this.channel = channel;
-        this.userId = userId;
+        this.participant = participant;
     }
 
     @Override
@@ -45,9 +41,7 @@ public class TLRequestChannelsGetParticipant extends TLMethod<TLChannelParticipa
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLChannelParticipant)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLChannelParticipant) response;
     }
@@ -55,21 +49,21 @@ public class TLRequestChannelsGetParticipant extends TLMethod<TLChannelParticipa
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
         writeTLObject(channel, stream);
-        writeTLObject(userId, stream);
+        writeTLObject(participant, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         channel = readTLObject(stream, context, TLAbsInputChannel.class, -1);
-        userId = readTLObject(stream, context, TLAbsInputUser.class, -1);
+        participant = readTLObject(stream, context, TLAbsInputPeer.class, -1);
     }
 
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
         size += channel.computeSerializedSize();
-        size += userId.computeSerializedSize();
+        size += participant.computeSerializedSize();
         return size;
     }
 
@@ -91,11 +85,11 @@ public class TLRequestChannelsGetParticipant extends TLMethod<TLChannelParticipa
         this.channel = channel;
     }
 
-    public TLAbsInputUser getUserId() {
-        return userId;
+    public TLAbsInputPeer getParticipant() {
+        return participant;
     }
 
-    public void setUserId(TLAbsInputUser userId) {
-        this.userId = userId;
+    public void setParticipant(TLAbsInputPeer participant) {
+        this.participant = participant;
     }
 }

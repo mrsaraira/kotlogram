@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import java.util.*
 
 private val genericRegex = Regex("([a-zA-Z]+)<([a-zA-Z]+)>") // Vector<SomeKindOfType>
+private val dotGenericRegex = Regex("([a-zA-Z]+)<([a-zA-Z]+\\.[a-zA-Z]+)>") // Vector<sometype.anotherType>
 private val flagRegex = Regex("([a-zA-Z]+).(\\d+)\\?([a-zA-Z<>.]+)") // flags.0?true
 private val rawRegex = Regex("[a-zA-Z].+")
 
@@ -29,7 +30,7 @@ fun buildFromJson(root: JsonNode): TLDefinition {
     for (constructor in constructorsNode) {
         val name = constructor["predicate"].textValue()
         val id = try {
-            constructor["id"].intValue()
+            constructor["id"].textValue().toInt()
         } catch (e: Exception) {
             constructor["id"].textValue().toInt()
         }
@@ -53,7 +54,7 @@ fun buildFromJson(root: JsonNode): TLDefinition {
     for (method in methodsNode) {
         val name = method.get("method").textValue()
         val id = try {
-            method["id"].intValue()
+            method["id"].textValue().toInt()
         } catch (e: Exception) {
             method["id"].textValue().toInt()
         }
@@ -107,6 +108,19 @@ private fun createType(typeName: String, types: Map<String, TLTypeRaw>, isParame
 
         TLTypeGeneric(tlName, arrayOf(createType(genericName, types)))
     }
+
+    typeName.matches(dotGenericRegex) -> {
+        val groups = dotGenericRegex.matchEntire(typeName)?.groups
+        val tlName: String = groups?.get(1)?.value ?: throw RuntimeException(
+                "Unknown error with type $typeName")
+        val genericName: String = groups?.get(2)?.value ?: throw RuntimeException(
+                "Unknown error with type $typeName")
+        if (!SupportedGenericTypes.contains(tlName)) throw RuntimeException(
+                "Unsupported generic type $tlName")
+
+        TLTypeGeneric(tlName, arrayOf(createType(genericName, types)))
+    }
+
     typeName.matches(rawRegex) -> {
         if (BuiltInTypes.contains(typeName))
             TLTypeRaw(typeName)

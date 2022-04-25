@@ -1,63 +1,56 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLUpdateChatUserTyping extends TLAbsUpdate {
+    public static final int CONSTRUCTOR_ID = 0x83487af0;
 
-    public static final int CONSTRUCTOR_ID = 0x9a65ea1f;
+    protected long chatId;
 
-    protected int chatId;
-
-    protected int userId;
+    protected TLAbsPeer fromId;
 
     protected TLAbsSendMessageAction action;
 
-    private final String _constructor = "updateChatUserTyping#9a65ea1f";
+    private final String _constructor = "updateChatUserTyping#83487af0";
 
     public TLUpdateChatUserTyping() {
     }
 
-    public TLUpdateChatUserTyping(int chatId, int userId, TLAbsSendMessageAction action) {
+    public TLUpdateChatUserTyping(long chatId, TLAbsPeer fromId, TLAbsSendMessageAction action) {
         this.chatId = chatId;
-        this.userId = userId;
+        this.fromId = fromId;
         this.action = action;
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
-        writeInt(chatId, stream);
-        writeInt(userId, stream);
+        writeLong(chatId, stream);
+        writeTLObject(fromId, stream);
         writeTLObject(action, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        chatId = readInt(stream);
-        userId = readInt(stream);
+        chatId = readLong(stream);
+        fromId = readTLObject(stream, context, TLAbsPeer.class, -1);
         action = readTLObject(stream, context, TLAbsSendMessageAction.class, -1);
     }
 
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
-        size += SIZE_INT32;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
+        size += fromId.computeSerializedSize();
         size += action.computeSerializedSize();
         return size;
     }
@@ -72,20 +65,20 @@ public class TLUpdateChatUserTyping extends TLAbsUpdate {
         return CONSTRUCTOR_ID;
     }
 
-    public int getChatId() {
+    public long getChatId() {
         return chatId;
     }
 
-    public void setChatId(int chatId) {
+    public void setChatId(long chatId) {
         this.chatId = chatId;
     }
 
-    public int getUserId() {
-        return userId;
+    public TLAbsPeer getFromId() {
+        return fromId;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setFromId(TLAbsPeer fromId) {
+        this.fromId = fromId;
     }
 
     public TLAbsSendMessageAction getAction() {

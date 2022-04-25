@@ -1,44 +1,40 @@
 package com.github.badoualy.telegram.tl.api.channels;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsChannelParticipant;
+import com.github.badoualy.telegram.tl.api.TLAbsChat;
 import com.github.badoualy.telegram.tl.api.TLAbsUser;
-import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
-public class TLChannelParticipants extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0xf56ee2a8;
+public class TLChannelParticipants extends TLAbsChannelParticipants {
+    public static final int CONSTRUCTOR_ID = 0x9ab0feaf;
 
     protected int count;
 
     protected TLVector<TLAbsChannelParticipant> participants;
 
+    protected TLVector<TLAbsChat> chats;
+
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "channels.channelParticipants#f56ee2a8";
+    private final String _constructor = "channels.channelParticipants#9ab0feaf";
 
     public TLChannelParticipants() {
     }
 
-    public TLChannelParticipants(int count, TLVector<TLAbsChannelParticipant> participants, TLVector<TLAbsUser> users) {
+    public TLChannelParticipants(int count, TLVector<TLAbsChannelParticipant> participants, TLVector<TLAbsChat> chats, TLVector<TLAbsUser> users) {
         this.count = count;
         this.participants = participants;
+        this.chats = chats;
         this.users = users;
     }
 
@@ -46,6 +42,7 @@ public class TLChannelParticipants extends TLObject {
     public void serializeBody(OutputStream stream) throws IOException {
         writeInt(count, stream);
         writeTLVector(participants, stream);
+        writeTLVector(chats, stream);
         writeTLVector(users, stream);
     }
 
@@ -54,6 +51,7 @@ public class TLChannelParticipants extends TLObject {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         count = readInt(stream);
         participants = readTLVector(stream, context);
+        chats = readTLVector(stream, context);
         users = readTLVector(stream, context);
     }
 
@@ -62,6 +60,7 @@ public class TLChannelParticipants extends TLObject {
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
         size += participants.computeSerializedSize();
+        size += chats.computeSerializedSize();
         size += users.computeSerializedSize();
         return size;
     }
@@ -90,6 +89,14 @@ public class TLChannelParticipants extends TLObject {
 
     public void setParticipants(TLVector<TLAbsChannelParticipant> participants) {
         this.participants = participants;
+    }
+
+    public TLVector<TLAbsChat> getChats() {
+        return chats;
+    }
+
+    public void setChats(TLVector<TLAbsChat> chats) {
+        this.chats = chats;
     }
 
     public TLVector<TLAbsUser> getUsers() {

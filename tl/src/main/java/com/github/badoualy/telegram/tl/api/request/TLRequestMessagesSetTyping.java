@@ -1,39 +1,41 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
 import com.github.badoualy.telegram.tl.api.TLAbsSendMessageAction;
 import com.github.badoualy.telegram.tl.core.TLBool;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLRequestMessagesSetTyping extends TLMethod<TLBool> {
+    public static final int CONSTRUCTOR_ID = 0x58943ee2;
 
-    public static final int CONSTRUCTOR_ID = 0xa3825e50;
+    protected int flags;
 
     protected TLAbsInputPeer peer;
 
+    protected Integer topMsgId;
+
     protected TLAbsSendMessageAction action;
 
-    private final String _constructor = "messages.setTyping#a3825e50";
+    private final String _constructor = "messages.setTyping#58943ee2";
 
     public TLRequestMessagesSetTyping() {
     }
 
-    public TLRequestMessagesSetTyping(TLAbsInputPeer peer, TLAbsSendMessageAction action) {
+    public TLRequestMessagesSetTyping(TLAbsInputPeer peer, Integer topMsgId, TLAbsSendMessageAction action) {
         this.peer = peer;
+        this.topMsgId = topMsgId;
         this.action = action;
     }
 
@@ -45,30 +47,49 @@ public class TLRequestMessagesSetTyping extends TLMethod<TLBool> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLBool)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLBool) response;
     }
 
+    private void computeFlags() {
+        flags = 0;
+        flags = topMsgId != null ? (flags | 1) : (flags & ~1);
+    }
+
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
+        computeFlags();
+
+        writeInt(flags, stream);
         writeTLObject(peer, stream);
+        if ((flags & 1) != 0) {
+            if (topMsgId == null) throwNullFieldException("topMsgId", flags);
+            writeInt(topMsgId, stream);
+        }
         writeTLObject(action, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
+        flags = readInt(stream);
         peer = readTLObject(stream, context, TLAbsInputPeer.class, -1);
+        topMsgId = (flags & 1) != 0 ? readInt(stream) : null;
         action = readTLObject(stream, context, TLAbsSendMessageAction.class, -1);
     }
 
     @Override
     public int computeSerializedSize() {
+        computeFlags();
+
         int size = SIZE_CONSTRUCTOR_ID;
+        size += SIZE_INT32;
         size += peer.computeSerializedSize();
+        if ((flags & 1) != 0) {
+            if (topMsgId == null) throwNullFieldException("topMsgId", flags);
+            size += SIZE_INT32;
+        }
         size += action.computeSerializedSize();
         return size;
     }
@@ -89,6 +110,14 @@ public class TLRequestMessagesSetTyping extends TLMethod<TLBool> {
 
     public void setPeer(TLAbsInputPeer peer) {
         this.peer = peer;
+    }
+
+    public Integer getTopMsgId() {
+        return topMsgId;
+    }
+
+    public void setTopMsgId(Integer topMsgId) {
+        this.topMsgId = topMsgId;
     }
 
     public TLAbsSendMessageAction getAction() {

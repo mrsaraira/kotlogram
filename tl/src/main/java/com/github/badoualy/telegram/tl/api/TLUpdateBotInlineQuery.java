@@ -1,60 +1,51 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLUpdateBotInlineQuery extends TLAbsUpdate {
-
-    public static final int CONSTRUCTOR_ID = 0x54826690;
+    public static final int CONSTRUCTOR_ID = 0x496f379c;
 
     protected int flags;
 
     protected long queryId;
 
-    protected int userId;
+    protected long userId;
 
     protected String query;
 
     protected TLAbsGeoPoint geo;
 
+    protected TLAbsInlineQueryPeerType peerType;
+
     protected String offset;
 
-    private final String _constructor = "updateBotInlineQuery#54826690";
+    private final String _constructor = "updateBotInlineQuery#496f379c";
 
     public TLUpdateBotInlineQuery() {
     }
 
-    public TLUpdateBotInlineQuery(long queryId, int userId, String query, TLAbsGeoPoint geo, String offset) {
+    public TLUpdateBotInlineQuery(long queryId, long userId, String query, TLAbsGeoPoint geo, TLAbsInlineQueryPeerType peerType, String offset) {
         this.queryId = queryId;
         this.userId = userId;
         this.query = query;
         this.geo = geo;
+        this.peerType = peerType;
         this.offset = offset;
     }
 
     private void computeFlags() {
         flags = 0;
         flags = geo != null ? (flags | 1) : (flags & ~1);
+        flags = peerType != null ? (flags | 2) : (flags & ~2);
     }
 
     @Override
@@ -63,11 +54,15 @@ public class TLUpdateBotInlineQuery extends TLAbsUpdate {
 
         writeInt(flags, stream);
         writeLong(queryId, stream);
-        writeInt(userId, stream);
+        writeLong(userId, stream);
         writeString(query, stream);
         if ((flags & 1) != 0) {
             if (geo == null) throwNullFieldException("geo", flags);
             writeTLObject(geo, stream);
+        }
+        if ((flags & 2) != 0) {
+            if (peerType == null) throwNullFieldException("peerType", flags);
+            writeTLObject(peerType, stream);
         }
         writeString(offset, stream);
     }
@@ -77,9 +72,10 @@ public class TLUpdateBotInlineQuery extends TLAbsUpdate {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         queryId = readLong(stream);
-        userId = readInt(stream);
+        userId = readLong(stream);
         query = readTLString(stream);
         geo = (flags & 1) != 0 ? readTLObject(stream, context, TLAbsGeoPoint.class, -1) : null;
+        peerType = (flags & 2) != 0 ? readTLObject(stream, context, TLAbsInlineQueryPeerType.class, -1) : null;
         offset = readTLString(stream);
     }
 
@@ -90,11 +86,15 @@ public class TLUpdateBotInlineQuery extends TLAbsUpdate {
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
         size += SIZE_INT64;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
         size += computeTLStringSerializedSize(query);
         if ((flags & 1) != 0) {
             if (geo == null) throwNullFieldException("geo", flags);
             size += geo.computeSerializedSize();
+        }
+        if ((flags & 2) != 0) {
+            if (peerType == null) throwNullFieldException("peerType", flags);
+            size += peerType.computeSerializedSize();
         }
         size += computeTLStringSerializedSize(offset);
         return size;
@@ -118,11 +118,11 @@ public class TLUpdateBotInlineQuery extends TLAbsUpdate {
         this.queryId = queryId;
     }
 
-    public int getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 
@@ -140,6 +140,14 @@ public class TLUpdateBotInlineQuery extends TLAbsUpdate {
 
     public void setGeo(TLAbsGeoPoint geo) {
         this.geo = geo;
+    }
+
+    public TLAbsInlineQueryPeerType getPeerType() {
+        return peerType;
+    }
+
+    public void setPeerType(TLAbsInlineQueryPeerType peerType) {
+        this.peerType = peerType;
     }
 
     public String getOffset() {

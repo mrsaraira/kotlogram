@@ -1,24 +1,20 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
+import com.github.badoualy.telegram.tl.core.TLStringVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLPhoneCallProtocol extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0xa2bb35cb;
+    public static final int CONSTRUCTOR_ID = 0xfc878fc8;
 
     protected int flags;
 
@@ -30,16 +26,19 @@ public class TLPhoneCallProtocol extends TLObject {
 
     protected int maxLayer;
 
-    private final String _constructor = "phoneCallProtocol#a2bb35cb";
+    protected TLStringVector libraryVersions;
+
+    private final String _constructor = "phoneCallProtocol#fc878fc8";
 
     public TLPhoneCallProtocol() {
     }
 
-    public TLPhoneCallProtocol(boolean udpP2p, boolean udpReflector, int minLayer, int maxLayer) {
+    public TLPhoneCallProtocol(boolean udpP2p, boolean udpReflector, int minLayer, int maxLayer, TLStringVector libraryVersions) {
         this.udpP2p = udpP2p;
         this.udpReflector = udpReflector;
         this.minLayer = minLayer;
         this.maxLayer = maxLayer;
+        this.libraryVersions = libraryVersions;
     }
 
     private void computeFlags() {
@@ -55,6 +54,7 @@ public class TLPhoneCallProtocol extends TLObject {
         writeInt(flags, stream);
         writeInt(minLayer, stream);
         writeInt(maxLayer, stream);
+        writeTLVector(libraryVersions, stream);
     }
 
     @Override
@@ -65,6 +65,7 @@ public class TLPhoneCallProtocol extends TLObject {
         udpReflector = (flags & 2) != 0;
         minLayer = readInt(stream);
         maxLayer = readInt(stream);
+        libraryVersions = readTLStringVector(stream, context);
     }
 
     @Override
@@ -75,6 +76,7 @@ public class TLPhoneCallProtocol extends TLObject {
         size += SIZE_INT32;
         size += SIZE_INT32;
         size += SIZE_INT32;
+        size += libraryVersions.computeSerializedSize();
         return size;
     }
 
@@ -118,5 +120,13 @@ public class TLPhoneCallProtocol extends TLObject {
 
     public void setMaxLayer(int maxLayer) {
         this.maxLayer = maxLayer;
+    }
+
+    public TLStringVector getLibraryVersions() {
+        return libraryVersions;
+    }
+
+    public void setLibraryVersions(TLStringVector libraryVersions) {
+        this.libraryVersions = libraryVersions;
     }
 }

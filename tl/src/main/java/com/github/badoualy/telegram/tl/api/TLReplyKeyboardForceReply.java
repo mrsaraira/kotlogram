@@ -1,23 +1,18 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLReplyKeyboardForceReply extends TLAbsReplyMarkup {
-
-    public static final int CONSTRUCTOR_ID = 0xf4108aa0;
+    public static final int CONSTRUCTOR_ID = 0x86b40b08;
 
     protected int flags;
 
@@ -25,20 +20,24 @@ public class TLReplyKeyboardForceReply extends TLAbsReplyMarkup {
 
     protected boolean selective;
 
-    private final String _constructor = "replyKeyboardForceReply#f4108aa0";
+    protected String placeholder;
+
+    private final String _constructor = "replyKeyboardForceReply#86b40b08";
 
     public TLReplyKeyboardForceReply() {
     }
 
-    public TLReplyKeyboardForceReply(boolean singleUse, boolean selective) {
+    public TLReplyKeyboardForceReply(boolean singleUse, boolean selective, String placeholder) {
         this.singleUse = singleUse;
         this.selective = selective;
+        this.placeholder = placeholder;
     }
 
     private void computeFlags() {
         flags = 0;
         flags = singleUse ? (flags | 2) : (flags & ~2);
         flags = selective ? (flags | 4) : (flags & ~4);
+        flags = placeholder != null ? (flags | 8) : (flags & ~8);
     }
 
     @Override
@@ -46,6 +45,10 @@ public class TLReplyKeyboardForceReply extends TLAbsReplyMarkup {
         computeFlags();
 
         writeInt(flags, stream);
+        if ((flags & 8) != 0) {
+            if (placeholder == null) throwNullFieldException("placeholder", flags);
+            writeString(placeholder, stream);
+        }
     }
 
     @Override
@@ -54,6 +57,7 @@ public class TLReplyKeyboardForceReply extends TLAbsReplyMarkup {
         flags = readInt(stream);
         singleUse = (flags & 2) != 0;
         selective = (flags & 4) != 0;
+        placeholder = (flags & 8) != 0 ? readTLString(stream) : null;
     }
 
     @Override
@@ -62,6 +66,10 @@ public class TLReplyKeyboardForceReply extends TLAbsReplyMarkup {
 
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
+        if ((flags & 8) != 0) {
+            if (placeholder == null) throwNullFieldException("placeholder", flags);
+            size += computeTLStringSerializedSize(placeholder);
+        }
         return size;
     }
 
@@ -89,5 +97,13 @@ public class TLReplyKeyboardForceReply extends TLAbsReplyMarkup {
 
     public void setSelective(boolean selective) {
         this.selective = selective;
+    }
+
+    public String getPlaceholder() {
+        return placeholder;
+    }
+
+    public void setPlaceholder(String placeholder) {
+        this.placeholder = placeholder;
     }
 }

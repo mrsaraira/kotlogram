@@ -1,27 +1,19 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLMessageService extends TLAbsMessage {
-
-    public static final int CONSTRUCTOR_ID = 0x9e19a1f6;
-
-    protected int flags;
+    public static final int CONSTRUCTOR_ID = 0x2b085862;
 
     protected boolean out;
 
@@ -33,33 +25,39 @@ public class TLMessageService extends TLAbsMessage {
 
     protected boolean post;
 
-    protected Integer fromId;
+    protected boolean legacy;
 
-    protected TLAbsPeer toId;
+    protected TLAbsPeer fromId;
 
-    protected Integer replyToMsgId;
+    protected TLAbsPeer peerId;
+
+    protected TLMessageReplyHeader replyTo;
 
     protected int date;
 
     protected TLAbsMessageAction action;
 
-    private final String _constructor = "messageService#9e19a1f6";
+    protected Integer ttlPeriod;
+
+    private final String _constructor = "messageService#2b085862";
 
     public TLMessageService() {
     }
 
-    public TLMessageService(boolean out, boolean mentioned, boolean mediaUnread, boolean silent, boolean post, int id, Integer fromId, TLAbsPeer toId, Integer replyToMsgId, int date, TLAbsMessageAction action) {
+    public TLMessageService(boolean out, boolean mentioned, boolean mediaUnread, boolean silent, boolean post, boolean legacy, int id, TLAbsPeer fromId, TLAbsPeer peerId, TLMessageReplyHeader replyTo, int date, TLAbsMessageAction action, Integer ttlPeriod) {
         this.out = out;
         this.mentioned = mentioned;
         this.mediaUnread = mediaUnread;
         this.silent = silent;
         this.post = post;
+        this.legacy = legacy;
         this.id = id;
         this.fromId = fromId;
-        this.toId = toId;
-        this.replyToMsgId = replyToMsgId;
+        this.peerId = peerId;
+        this.replyTo = replyTo;
         this.date = date;
         this.action = action;
+        this.ttlPeriod = ttlPeriod;
     }
 
     private void computeFlags() {
@@ -69,8 +67,10 @@ public class TLMessageService extends TLAbsMessage {
         flags = mediaUnread ? (flags | 32) : (flags & ~32);
         flags = silent ? (flags | 8192) : (flags & ~8192);
         flags = post ? (flags | 16384) : (flags & ~16384);
+        flags = legacy ? (flags | 524288) : (flags & ~524288);
         flags = fromId != null ? (flags | 256) : (flags & ~256);
-        flags = replyToMsgId != null ? (flags | 8) : (flags & ~8);
+        flags = replyTo != null ? (flags | 8) : (flags & ~8);
+        flags = ttlPeriod != null ? (flags | 33554432) : (flags & ~33554432);
     }
 
     @Override
@@ -81,15 +81,19 @@ public class TLMessageService extends TLAbsMessage {
         writeInt(id, stream);
         if ((flags & 256) != 0) {
             if (fromId == null) throwNullFieldException("fromId", flags);
-            writeInt(fromId, stream);
+            writeTLObject(fromId, stream);
         }
-        writeTLObject(toId, stream);
+        writeTLObject(peerId, stream);
         if ((flags & 8) != 0) {
-            if (replyToMsgId == null) throwNullFieldException("replyToMsgId", flags);
-            writeInt(replyToMsgId, stream);
+            if (replyTo == null) throwNullFieldException("replyTo", flags);
+            writeTLObject(replyTo, stream);
         }
         writeInt(date, stream);
         writeTLObject(action, stream);
+        if ((flags & 33554432) != 0) {
+            if (ttlPeriod == null) throwNullFieldException("ttlPeriod", flags);
+            writeInt(ttlPeriod, stream);
+        }
     }
 
     @Override
@@ -101,12 +105,14 @@ public class TLMessageService extends TLAbsMessage {
         mediaUnread = (flags & 32) != 0;
         silent = (flags & 8192) != 0;
         post = (flags & 16384) != 0;
+        legacy = (flags & 524288) != 0;
         id = readInt(stream);
-        fromId = (flags & 256) != 0 ? readInt(stream) : null;
-        toId = readTLObject(stream, context, TLAbsPeer.class, -1);
-        replyToMsgId = (flags & 8) != 0 ? readInt(stream) : null;
+        fromId = (flags & 256) != 0 ? readTLObject(stream, context, TLAbsPeer.class, -1) : null;
+        peerId = readTLObject(stream, context, TLAbsPeer.class, -1);
+        replyTo = (flags & 8) != 0 ? readTLObject(stream, context, TLMessageReplyHeader.class, TLMessageReplyHeader.CONSTRUCTOR_ID) : null;
         date = readInt(stream);
         action = readTLObject(stream, context, TLAbsMessageAction.class, -1);
+        ttlPeriod = (flags & 33554432) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -118,15 +124,19 @@ public class TLMessageService extends TLAbsMessage {
         size += SIZE_INT32;
         if ((flags & 256) != 0) {
             if (fromId == null) throwNullFieldException("fromId", flags);
-            size += SIZE_INT32;
+            size += fromId.computeSerializedSize();
         }
-        size += toId.computeSerializedSize();
+        size += peerId.computeSerializedSize();
         if ((flags & 8) != 0) {
-            if (replyToMsgId == null) throwNullFieldException("replyToMsgId", flags);
-            size += SIZE_INT32;
+            if (replyTo == null) throwNullFieldException("replyTo", flags);
+            size += replyTo.computeSerializedSize();
         }
         size += SIZE_INT32;
         size += action.computeSerializedSize();
+        if ((flags & 33554432) != 0) {
+            if (ttlPeriod == null) throwNullFieldException("ttlPeriod", flags);
+            size += SIZE_INT32;
+        }
         return size;
     }
 
@@ -180,6 +190,14 @@ public class TLMessageService extends TLAbsMessage {
         this.post = post;
     }
 
+    public boolean getLegacy() {
+        return legacy;
+    }
+
+    public void setLegacy(boolean legacy) {
+        this.legacy = legacy;
+    }
+
     public int getId() {
         return id;
     }
@@ -188,28 +206,28 @@ public class TLMessageService extends TLAbsMessage {
         this.id = id;
     }
 
-    public Integer getFromId() {
+    public TLAbsPeer getFromId() {
         return fromId;
     }
 
-    public void setFromId(Integer fromId) {
+    public void setFromId(TLAbsPeer fromId) {
         this.fromId = fromId;
     }
 
-    public TLAbsPeer getToId() {
-        return toId;
+    public TLAbsPeer getPeerId() {
+        return peerId;
     }
 
-    public void setToId(TLAbsPeer toId) {
-        this.toId = toId;
+    public void setPeerId(TLAbsPeer peerId) {
+        this.peerId = peerId;
     }
 
-    public Integer getReplyToMsgId() {
-        return replyToMsgId;
+    public TLMessageReplyHeader getReplyTo() {
+        return replyTo;
     }
 
-    public void setReplyToMsgId(Integer replyToMsgId) {
-        this.replyToMsgId = replyToMsgId;
+    public void setReplyTo(TLMessageReplyHeader replyTo) {
+        this.replyTo = replyTo;
     }
 
     public int getDate() {
@@ -226,5 +244,13 @@ public class TLMessageService extends TLAbsMessage {
 
     public void setAction(TLAbsMessageAction action) {
         this.action = action;
+    }
+
+    public Integer getTtlPeriod() {
+        return ttlPeriod;
+    }
+
+    public void setTtlPeriod(Integer ttlPeriod) {
+        this.ttlPeriod = ttlPeriod;
     }
 }

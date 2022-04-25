@@ -1,56 +1,48 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLChatForbidden extends TLAbsChat {
-
-    public static final int CONSTRUCTOR_ID = 0x7328bdb;
+    public static final int CONSTRUCTOR_ID = 0x6592a1a7;
 
     protected String title;
 
-    private final String _constructor = "chatForbidden#7328bdb";
+    private final String _constructor = "chatForbidden#6592a1a7";
 
     public TLChatForbidden() {
     }
 
-    public TLChatForbidden(int id, String title) {
+    public TLChatForbidden(long id, String title) {
         this.id = id;
         this.title = title;
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
-        writeInt(id, stream);
+        writeLong(id, stream);
         writeString(title, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        id = readInt(stream);
+        id = readLong(stream);
         title = readTLString(stream);
     }
 
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
         size += computeTLStringSerializedSize(title);
         return size;
     }
@@ -65,11 +57,11 @@ public class TLChatForbidden extends TLAbsChat {
         return CONSTRUCTOR_ID;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

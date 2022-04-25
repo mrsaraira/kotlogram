@@ -1,58 +1,50 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLInputChannel extends TLAbsInputChannel {
+    public static final int CONSTRUCTOR_ID = 0xf35aec28;
 
-    public static final int CONSTRUCTOR_ID = 0xafeb712e;
-
-    protected int channelId;
+    protected long channelId;
 
     protected long accessHash;
 
-    private final String _constructor = "inputChannel#afeb712e";
+    private final String _constructor = "inputChannel#f35aec28";
 
     public TLInputChannel() {
     }
 
-    public TLInputChannel(int channelId, long accessHash) {
+    public TLInputChannel(long channelId, long accessHash) {
         this.channelId = channelId;
         this.accessHash = accessHash;
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
-        writeInt(channelId, stream);
+        writeLong(channelId, stream);
         writeLong(accessHash, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        channelId = readInt(stream);
+        channelId = readLong(stream);
         accessHash = readLong(stream);
     }
 
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
         size += SIZE_INT64;
         return size;
     }
@@ -67,11 +59,11 @@ public class TLInputChannel extends TLAbsInputChannel {
         return CONSTRUCTOR_ID;
     }
 
-    public int getChannelId() {
+    public long getChannelId() {
         return channelId;
     }
 
-    public void setChannelId(int channelId) {
+    public void setChannelId(long channelId) {
         this.channelId = channelId;
     }
 
@@ -81,20 +73,5 @@ public class TLInputChannel extends TLAbsInputChannel {
 
     public void setAccessHash(long accessHash) {
         this.accessHash = accessHash;
-    }
-
-    @Override
-    public final boolean isEmpty() {
-        return false;
-    }
-
-    @Override
-    public final boolean isNotEmpty() {
-        return true;
-    }
-
-    @Override
-    public final TLInputChannel getAsInputChannel() {
-        return this;
     }
 }

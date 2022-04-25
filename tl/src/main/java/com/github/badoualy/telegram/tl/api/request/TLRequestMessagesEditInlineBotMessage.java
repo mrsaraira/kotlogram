@@ -1,59 +1,51 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.TLAbsInputBotInlineMessageID;
+import com.github.badoualy.telegram.tl.api.TLAbsInputMedia;
 import com.github.badoualy.telegram.tl.api.TLAbsMessageEntity;
 import com.github.badoualy.telegram.tl.api.TLAbsReplyMarkup;
-import com.github.badoualy.telegram.tl.api.TLInputBotInlineMessageID;
 import com.github.badoualy.telegram.tl.core.TLBool;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLRequestMessagesEditInlineBotMessage extends TLMethod<TLBool> {
-
-    public static final int CONSTRUCTOR_ID = 0x130c2c85;
+    public static final int CONSTRUCTOR_ID = 0x83557dba;
 
     protected int flags;
 
     protected boolean noWebpage;
 
-    protected TLInputBotInlineMessageID id;
+    protected TLAbsInputBotInlineMessageID id;
 
     protected String message;
+
+    protected TLAbsInputMedia media;
 
     protected TLAbsReplyMarkup replyMarkup;
 
     protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "messages.editInlineBotMessage#130c2c85";
+    private final String _constructor = "messages.editInlineBotMessage#83557dba";
 
     public TLRequestMessagesEditInlineBotMessage() {
     }
 
-    public TLRequestMessagesEditInlineBotMessage(boolean noWebpage, TLInputBotInlineMessageID id, String message, TLAbsReplyMarkup replyMarkup, TLVector<TLAbsMessageEntity> entities) {
+    public TLRequestMessagesEditInlineBotMessage(boolean noWebpage, TLAbsInputBotInlineMessageID id, String message, TLAbsInputMedia media, TLAbsReplyMarkup replyMarkup, TLVector<TLAbsMessageEntity> entities) {
         this.noWebpage = noWebpage;
         this.id = id;
         this.message = message;
+        this.media = media;
         this.replyMarkup = replyMarkup;
         this.entities = entities;
     }
@@ -66,9 +58,7 @@ public class TLRequestMessagesEditInlineBotMessage extends TLMethod<TLBool> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLBool)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLBool) response;
     }
@@ -77,6 +67,7 @@ public class TLRequestMessagesEditInlineBotMessage extends TLMethod<TLBool> {
         flags = 0;
         flags = noWebpage ? (flags | 2) : (flags & ~2);
         flags = message != null ? (flags | 2048) : (flags & ~2048);
+        flags = media != null ? (flags | 16384) : (flags & ~16384);
         flags = replyMarkup != null ? (flags | 4) : (flags & ~4);
         flags = entities != null ? (flags | 8) : (flags & ~8);
     }
@@ -90,6 +81,10 @@ public class TLRequestMessagesEditInlineBotMessage extends TLMethod<TLBool> {
         if ((flags & 2048) != 0) {
             if (message == null) throwNullFieldException("message", flags);
             writeString(message, stream);
+        }
+        if ((flags & 16384) != 0) {
+            if (media == null) throwNullFieldException("media", flags);
+            writeTLObject(media, stream);
         }
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
@@ -106,8 +101,9 @@ public class TLRequestMessagesEditInlineBotMessage extends TLMethod<TLBool> {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         noWebpage = (flags & 2) != 0;
-        id = readTLObject(stream, context, TLInputBotInlineMessageID.class, TLInputBotInlineMessageID.CONSTRUCTOR_ID);
+        id = readTLObject(stream, context, TLAbsInputBotInlineMessageID.class, -1);
         message = (flags & 2048) != 0 ? readTLString(stream) : null;
+        media = (flags & 16384) != 0 ? readTLObject(stream, context, TLAbsInputMedia.class, -1) : null;
         replyMarkup = (flags & 4) != 0 ? readTLObject(stream, context, TLAbsReplyMarkup.class, -1) : null;
         entities = (flags & 8) != 0 ? readTLVector(stream, context) : null;
     }
@@ -122,6 +118,10 @@ public class TLRequestMessagesEditInlineBotMessage extends TLMethod<TLBool> {
         if ((flags & 2048) != 0) {
             if (message == null) throwNullFieldException("message", flags);
             size += computeTLStringSerializedSize(message);
+        }
+        if ((flags & 16384) != 0) {
+            if (media == null) throwNullFieldException("media", flags);
+            size += media.computeSerializedSize();
         }
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
@@ -152,11 +152,11 @@ public class TLRequestMessagesEditInlineBotMessage extends TLMethod<TLBool> {
         this.noWebpage = noWebpage;
     }
 
-    public TLInputBotInlineMessageID getId() {
+    public TLAbsInputBotInlineMessageID getId() {
         return id;
     }
 
-    public void setId(TLInputBotInlineMessageID id) {
+    public void setId(TLAbsInputBotInlineMessageID id) {
         this.id = id;
     }
 
@@ -166,6 +166,14 @@ public class TLRequestMessagesEditInlineBotMessage extends TLMethod<TLBool> {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public TLAbsInputMedia getMedia() {
+        return media;
+    }
+
+    public void setMedia(TLAbsInputMedia media) {
+        this.media = media;
     }
 
     public TLAbsReplyMarkup getReplyMarkup() {

@@ -1,32 +1,19 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLBytes;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLInputMediaInvoice extends TLAbsInputMedia {
-
-    public static final int CONSTRUCTOR_ID = 0x92153685;
+    public static final int CONSTRUCTOR_ID = 0xd9799874;
 
     protected int flags;
 
@@ -42,26 +29,30 @@ public class TLInputMediaInvoice extends TLAbsInputMedia {
 
     protected String provider;
 
+    protected TLDataJSON providerData;
+
     protected String startParam;
 
-    private final String _constructor = "inputMediaInvoice#92153685";
+    private final String _constructor = "inputMediaInvoice#d9799874";
 
     public TLInputMediaInvoice() {
     }
 
-    public TLInputMediaInvoice(String title, String description, TLInputWebDocument photo, TLInvoice invoice, TLBytes payload, String provider, String startParam) {
+    public TLInputMediaInvoice(String title, String description, TLInputWebDocument photo, TLInvoice invoice, TLBytes payload, String provider, TLDataJSON providerData, String startParam) {
         this.title = title;
         this.description = description;
         this.photo = photo;
         this.invoice = invoice;
         this.payload = payload;
         this.provider = provider;
+        this.providerData = providerData;
         this.startParam = startParam;
     }
 
     private void computeFlags() {
         flags = 0;
         flags = photo != null ? (flags | 1) : (flags & ~1);
+        flags = startParam != null ? (flags | 2) : (flags & ~2);
     }
 
     @Override
@@ -78,7 +69,11 @@ public class TLInputMediaInvoice extends TLAbsInputMedia {
         writeTLObject(invoice, stream);
         writeTLBytes(payload, stream);
         writeString(provider, stream);
-        writeString(startParam, stream);
+        writeTLObject(providerData, stream);
+        if ((flags & 2) != 0) {
+            if (startParam == null) throwNullFieldException("startParam", flags);
+            writeString(startParam, stream);
+        }
     }
 
     @Override
@@ -87,12 +82,12 @@ public class TLInputMediaInvoice extends TLAbsInputMedia {
         flags = readInt(stream);
         title = readTLString(stream);
         description = readTLString(stream);
-        photo = (flags & 1) != 0 ? readTLObject(stream, context, TLInputWebDocument.class,
-                                                TLInputWebDocument.CONSTRUCTOR_ID) : null;
+        photo = (flags & 1) != 0 ? readTLObject(stream, context, TLInputWebDocument.class, TLInputWebDocument.CONSTRUCTOR_ID) : null;
         invoice = readTLObject(stream, context, TLInvoice.class, TLInvoice.CONSTRUCTOR_ID);
         payload = readTLBytes(stream, context);
         provider = readTLString(stream);
-        startParam = readTLString(stream);
+        providerData = readTLObject(stream, context, TLDataJSON.class, TLDataJSON.CONSTRUCTOR_ID);
+        startParam = (flags & 2) != 0 ? readTLString(stream) : null;
     }
 
     @Override
@@ -110,7 +105,11 @@ public class TLInputMediaInvoice extends TLAbsInputMedia {
         size += invoice.computeSerializedSize();
         size += computeTLBytesSerializedSize(payload);
         size += computeTLStringSerializedSize(provider);
-        size += computeTLStringSerializedSize(startParam);
+        size += providerData.computeSerializedSize();
+        if ((flags & 2) != 0) {
+            if (startParam == null) throwNullFieldException("startParam", flags);
+            size += computeTLStringSerializedSize(startParam);
+        }
         return size;
     }
 
@@ -170,6 +169,14 @@ public class TLInputMediaInvoice extends TLAbsInputMedia {
 
     public void setProvider(String provider) {
         this.provider = provider;
+    }
+
+    public TLDataJSON getProviderData() {
+        return providerData;
+    }
+
+    public void setProviderData(TLDataJSON providerData) {
+        this.providerData = providerData;
     }
 
     public String getStartParam() {

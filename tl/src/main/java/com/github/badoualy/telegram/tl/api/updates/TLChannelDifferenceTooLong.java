@@ -1,37 +1,26 @@
 package com.github.badoualy.telegram.tl.api.updates;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsChat;
+import com.github.badoualy.telegram.tl.api.TLAbsDialog;
 import com.github.badoualy.telegram.tl.api.TLAbsMessage;
 import com.github.badoualy.telegram.tl.api.TLAbsUser;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLChannelDifferenceTooLong extends TLAbsChannelDifference {
+    public static final int CONSTRUCTOR_ID = 0xa4bcc6fe;
 
-    public static final int CONSTRUCTOR_ID = 0x410dee07;
-
-    protected int topMessage;
-
-    protected int readInboxMaxId;
-
-    protected int readOutboxMaxId;
-
-    protected int unreadCount;
+    protected TLAbsDialog dialog;
 
     protected TLVector<TLAbsMessage> messages;
 
@@ -39,19 +28,15 @@ public class TLChannelDifferenceTooLong extends TLAbsChannelDifference {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "updates.channelDifferenceTooLong#410dee07";
+    private final String _constructor = "updates.channelDifferenceTooLong#a4bcc6fe";
 
     public TLChannelDifferenceTooLong() {
     }
 
-    public TLChannelDifferenceTooLong(boolean _final, int pts, Integer timeout, int topMessage, int readInboxMaxId, int readOutboxMaxId, int unreadCount, TLVector<TLAbsMessage> messages, TLVector<TLAbsChat> chats, TLVector<TLAbsUser> users) {
+    public TLChannelDifferenceTooLong(boolean _final, Integer timeout, TLAbsDialog dialog, TLVector<TLAbsMessage> messages, TLVector<TLAbsChat> chats, TLVector<TLAbsUser> users) {
         this._final = _final;
-        this.pts = pts;
         this.timeout = timeout;
-        this.topMessage = topMessage;
-        this.readInboxMaxId = readInboxMaxId;
-        this.readOutboxMaxId = readOutboxMaxId;
-        this.unreadCount = unreadCount;
+        this.dialog = dialog;
         this.messages = messages;
         this.chats = chats;
         this.users = users;
@@ -68,15 +53,11 @@ public class TLChannelDifferenceTooLong extends TLAbsChannelDifference {
         computeFlags();
 
         writeInt(flags, stream);
-        writeInt(pts, stream);
         if ((flags & 2) != 0) {
             if (timeout == null) throwNullFieldException("timeout", flags);
             writeInt(timeout, stream);
         }
-        writeInt(topMessage, stream);
-        writeInt(readInboxMaxId, stream);
-        writeInt(readOutboxMaxId, stream);
-        writeInt(unreadCount, stream);
+        writeTLObject(dialog, stream);
         writeTLVector(messages, stream);
         writeTLVector(chats, stream);
         writeTLVector(users, stream);
@@ -87,12 +68,8 @@ public class TLChannelDifferenceTooLong extends TLAbsChannelDifference {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         _final = (flags & 1) != 0;
-        pts = readInt(stream);
         timeout = (flags & 2) != 0 ? readInt(stream) : null;
-        topMessage = readInt(stream);
-        readInboxMaxId = readInt(stream);
-        readOutboxMaxId = readInt(stream);
-        unreadCount = readInt(stream);
+        dialog = readTLObject(stream, context, TLAbsDialog.class, -1);
         messages = readTLVector(stream, context);
         chats = readTLVector(stream, context);
         users = readTLVector(stream, context);
@@ -104,15 +81,11 @@ public class TLChannelDifferenceTooLong extends TLAbsChannelDifference {
 
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
-        size += SIZE_INT32;
         if ((flags & 2) != 0) {
             if (timeout == null) throwNullFieldException("timeout", flags);
             size += SIZE_INT32;
         }
-        size += SIZE_INT32;
-        size += SIZE_INT32;
-        size += SIZE_INT32;
-        size += SIZE_INT32;
+        size += dialog.computeSerializedSize();
         size += messages.computeSerializedSize();
         size += chats.computeSerializedSize();
         size += users.computeSerializedSize();
@@ -137,14 +110,6 @@ public class TLChannelDifferenceTooLong extends TLAbsChannelDifference {
         this._final = _final;
     }
 
-    public int getPts() {
-        return pts;
-    }
-
-    public void setPts(int pts) {
-        this.pts = pts;
-    }
-
     public Integer getTimeout() {
         return timeout;
     }
@@ -153,36 +118,12 @@ public class TLChannelDifferenceTooLong extends TLAbsChannelDifference {
         this.timeout = timeout;
     }
 
-    public int getTopMessage() {
-        return topMessage;
+    public TLAbsDialog getDialog() {
+        return dialog;
     }
 
-    public void setTopMessage(int topMessage) {
-        this.topMessage = topMessage;
-    }
-
-    public int getReadInboxMaxId() {
-        return readInboxMaxId;
-    }
-
-    public void setReadInboxMaxId(int readInboxMaxId) {
-        this.readInboxMaxId = readInboxMaxId;
-    }
-
-    public int getReadOutboxMaxId() {
-        return readOutboxMaxId;
-    }
-
-    public void setReadOutboxMaxId(int readOutboxMaxId) {
-        this.readOutboxMaxId = readOutboxMaxId;
-    }
-
-    public int getUnreadCount() {
-        return unreadCount;
-    }
-
-    public void setUnreadCount(int unreadCount) {
-        this.unreadCount = unreadCount;
+    public void setDialog(TLAbsDialog dialog) {
+        this.dialog = dialog;
     }
 
     public TLVector<TLAbsMessage> getMessages() {

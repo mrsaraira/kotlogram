@@ -1,40 +1,39 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
 import com.github.badoualy.telegram.tl.api.TLAbsReportReason;
 import com.github.badoualy.telegram.tl.core.TLBool;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLRequestAccountReportPeer extends TLMethod<TLBool> {
-
-    public static final int CONSTRUCTOR_ID = 0xae189d5f;
+    public static final int CONSTRUCTOR_ID = 0xc5ba3d86;
 
     protected TLAbsInputPeer peer;
 
     protected TLAbsReportReason reason;
 
-    private final String _constructor = "account.reportPeer#ae189d5f";
+    protected String message;
+
+    private final String _constructor = "account.reportPeer#c5ba3d86";
 
     public TLRequestAccountReportPeer() {
     }
 
-    public TLRequestAccountReportPeer(TLAbsInputPeer peer, TLAbsReportReason reason) {
+    public TLRequestAccountReportPeer(TLAbsInputPeer peer, TLAbsReportReason reason, String message) {
         this.peer = peer;
         this.reason = reason;
+        this.message = message;
     }
 
     @Override
@@ -45,9 +44,7 @@ public class TLRequestAccountReportPeer extends TLMethod<TLBool> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLBool)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLBool) response;
     }
@@ -56,6 +53,7 @@ public class TLRequestAccountReportPeer extends TLMethod<TLBool> {
     public void serializeBody(OutputStream stream) throws IOException {
         writeTLObject(peer, stream);
         writeTLObject(reason, stream);
+        writeString(message, stream);
     }
 
     @Override
@@ -63,6 +61,7 @@ public class TLRequestAccountReportPeer extends TLMethod<TLBool> {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         peer = readTLObject(stream, context, TLAbsInputPeer.class, -1);
         reason = readTLObject(stream, context, TLAbsReportReason.class, -1);
+        message = readTLString(stream);
     }
 
     @Override
@@ -70,6 +69,7 @@ public class TLRequestAccountReportPeer extends TLMethod<TLBool> {
         int size = SIZE_CONSTRUCTOR_ID;
         size += peer.computeSerializedSize();
         size += reason.computeSerializedSize();
+        size += computeTLStringSerializedSize(message);
         return size;
     }
 
@@ -97,5 +97,13 @@ public class TLRequestAccountReportPeer extends TLMethod<TLBool> {
 
     public void setReason(TLAbsReportReason reason) {
         this.reason = reason;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

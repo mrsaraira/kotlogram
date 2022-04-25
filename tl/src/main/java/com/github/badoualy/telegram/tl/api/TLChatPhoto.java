@@ -1,55 +1,83 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLBytes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLChatPhoto extends TLAbsChatPhoto {
+    public static final int CONSTRUCTOR_ID = 0x1c6e1c11;
 
-    public static final int CONSTRUCTOR_ID = 0x6153276a;
+    protected int flags;
 
-    protected TLAbsFileLocation photoSmall;
+    protected boolean hasVideo;
 
-    protected TLAbsFileLocation photoBig;
+    protected long photoId;
 
-    private final String _constructor = "chatPhoto#6153276a";
+    protected TLBytes strippedThumb;
+
+    protected int dcId;
+
+    private final String _constructor = "chatPhoto#1c6e1c11";
 
     public TLChatPhoto() {
     }
 
-    public TLChatPhoto(TLAbsFileLocation photoSmall, TLAbsFileLocation photoBig) {
-        this.photoSmall = photoSmall;
-        this.photoBig = photoBig;
+    public TLChatPhoto(boolean hasVideo, long photoId, TLBytes strippedThumb, int dcId) {
+        this.hasVideo = hasVideo;
+        this.photoId = photoId;
+        this.strippedThumb = strippedThumb;
+        this.dcId = dcId;
+    }
+
+    private void computeFlags() {
+        flags = 0;
+        flags = hasVideo ? (flags | 1) : (flags & ~1);
+        flags = strippedThumb != null ? (flags | 2) : (flags & ~2);
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
-        writeTLObject(photoSmall, stream);
-        writeTLObject(photoBig, stream);
+        computeFlags();
+
+        writeInt(flags, stream);
+        writeLong(photoId, stream);
+        if ((flags & 2) != 0) {
+            if (strippedThumb == null) throwNullFieldException("strippedThumb", flags);
+            writeTLBytes(strippedThumb, stream);
+        }
+        writeInt(dcId, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        photoSmall = readTLObject(stream, context, TLAbsFileLocation.class, -1);
-        photoBig = readTLObject(stream, context, TLAbsFileLocation.class, -1);
+        flags = readInt(stream);
+        hasVideo = (flags & 1) != 0;
+        photoId = readLong(stream);
+        strippedThumb = (flags & 2) != 0 ? readTLBytes(stream, context) : null;
+        dcId = readInt(stream);
     }
 
     @Override
     public int computeSerializedSize() {
+        computeFlags();
+
         int size = SIZE_CONSTRUCTOR_ID;
-        size += photoSmall.computeSerializedSize();
-        size += photoBig.computeSerializedSize();
+        size += SIZE_INT32;
+        size += SIZE_INT64;
+        if ((flags & 2) != 0) {
+            if (strippedThumb == null) throwNullFieldException("strippedThumb", flags);
+            size += computeTLBytesSerializedSize(strippedThumb);
+        }
+        size += SIZE_INT32;
         return size;
     }
 
@@ -63,20 +91,36 @@ public class TLChatPhoto extends TLAbsChatPhoto {
         return CONSTRUCTOR_ID;
     }
 
-    public TLAbsFileLocation getPhotoSmall() {
-        return photoSmall;
+    public boolean getHasVideo() {
+        return hasVideo;
     }
 
-    public void setPhotoSmall(TLAbsFileLocation photoSmall) {
-        this.photoSmall = photoSmall;
+    public void setHasVideo(boolean hasVideo) {
+        this.hasVideo = hasVideo;
     }
 
-    public TLAbsFileLocation getPhotoBig() {
-        return photoBig;
+    public long getPhotoId() {
+        return photoId;
     }
 
-    public void setPhotoBig(TLAbsFileLocation photoBig) {
-        this.photoBig = photoBig;
+    public void setPhotoId(long photoId) {
+        this.photoId = photoId;
+    }
+
+    public TLBytes getStrippedThumb() {
+        return strippedThumb;
+    }
+
+    public void setStrippedThumb(TLBytes strippedThumb) {
+        this.strippedThumb = strippedThumb;
+    }
+
+    public int getDcId() {
+        return dcId;
+    }
+
+    public void setDcId(int dcId) {
+        this.dcId = dcId;
     }
 
     @Override

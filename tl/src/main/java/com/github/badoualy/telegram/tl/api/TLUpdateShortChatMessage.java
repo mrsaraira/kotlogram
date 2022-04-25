@@ -1,31 +1,21 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLUpdateShortChatMessage extends TLAbsUpdates {
-
-    public static final int CONSTRUCTOR_ID = 0x16812688;
+    public static final int CONSTRUCTOR_ID = 0x4d6deea5;
 
     protected int flags;
 
@@ -39,9 +29,9 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
 
     protected int id;
 
-    protected int fromId;
+    protected long fromId;
 
-    protected int chatId;
+    protected long chatId;
 
     protected String message;
 
@@ -53,18 +43,20 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
 
     protected TLMessageFwdHeader fwdFrom;
 
-    protected Integer viaBotId;
+    protected Long viaBotId;
 
-    protected Integer replyToMsgId;
+    protected TLMessageReplyHeader replyTo;
 
     protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "updateShortChatMessage#16812688";
+    protected Integer ttlPeriod;
+
+    private final String _constructor = "updateShortChatMessage#4d6deea5";
 
     public TLUpdateShortChatMessage() {
     }
 
-    public TLUpdateShortChatMessage(boolean out, boolean mentioned, boolean mediaUnread, boolean silent, int id, int fromId, int chatId, String message, int pts, int ptsCount, int date, TLMessageFwdHeader fwdFrom, Integer viaBotId, Integer replyToMsgId, TLVector<TLAbsMessageEntity> entities) {
+    public TLUpdateShortChatMessage(boolean out, boolean mentioned, boolean mediaUnread, boolean silent, int id, long fromId, long chatId, String message, int pts, int ptsCount, int date, TLMessageFwdHeader fwdFrom, Long viaBotId, TLMessageReplyHeader replyTo, TLVector<TLAbsMessageEntity> entities, Integer ttlPeriod) {
         this.out = out;
         this.mentioned = mentioned;
         this.mediaUnread = mediaUnread;
@@ -78,8 +70,9 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
         this.date = date;
         this.fwdFrom = fwdFrom;
         this.viaBotId = viaBotId;
-        this.replyToMsgId = replyToMsgId;
+        this.replyTo = replyTo;
         this.entities = entities;
+        this.ttlPeriod = ttlPeriod;
     }
 
     private void computeFlags() {
@@ -90,8 +83,9 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
         flags = silent ? (flags | 8192) : (flags & ~8192);
         flags = fwdFrom != null ? (flags | 4) : (flags & ~4);
         flags = viaBotId != null ? (flags | 2048) : (flags & ~2048);
-        flags = replyToMsgId != null ? (flags | 8) : (flags & ~8);
+        flags = replyTo != null ? (flags | 8) : (flags & ~8);
         flags = entities != null ? (flags | 128) : (flags & ~128);
+        flags = ttlPeriod != null ? (flags | 33554432) : (flags & ~33554432);
     }
 
     @Override
@@ -100,8 +94,8 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
 
         writeInt(flags, stream);
         writeInt(id, stream);
-        writeInt(fromId, stream);
-        writeInt(chatId, stream);
+        writeLong(fromId, stream);
+        writeLong(chatId, stream);
         writeString(message, stream);
         writeInt(pts, stream);
         writeInt(ptsCount, stream);
@@ -112,15 +106,19 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
         }
         if ((flags & 2048) != 0) {
             if (viaBotId == null) throwNullFieldException("viaBotId", flags);
-            writeInt(viaBotId, stream);
+            writeLong(viaBotId, stream);
         }
         if ((flags & 8) != 0) {
-            if (replyToMsgId == null) throwNullFieldException("replyToMsgId", flags);
-            writeInt(replyToMsgId, stream);
+            if (replyTo == null) throwNullFieldException("replyTo", flags);
+            writeTLObject(replyTo, stream);
         }
         if ((flags & 128) != 0) {
             if (entities == null) throwNullFieldException("entities", flags);
             writeTLVector(entities, stream);
+        }
+        if ((flags & 33554432) != 0) {
+            if (ttlPeriod == null) throwNullFieldException("ttlPeriod", flags);
+            writeInt(ttlPeriod, stream);
         }
     }
 
@@ -133,17 +131,17 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
         mediaUnread = (flags & 32) != 0;
         silent = (flags & 8192) != 0;
         id = readInt(stream);
-        fromId = readInt(stream);
-        chatId = readInt(stream);
+        fromId = readLong(stream);
+        chatId = readLong(stream);
         message = readTLString(stream);
         pts = readInt(stream);
         ptsCount = readInt(stream);
         date = readInt(stream);
-        fwdFrom = (flags & 4) != 0 ? readTLObject(stream, context, TLMessageFwdHeader.class,
-                                                  TLMessageFwdHeader.CONSTRUCTOR_ID) : null;
-        viaBotId = (flags & 2048) != 0 ? readInt(stream) : null;
-        replyToMsgId = (flags & 8) != 0 ? readInt(stream) : null;
+        fwdFrom = (flags & 4) != 0 ? readTLObject(stream, context, TLMessageFwdHeader.class, TLMessageFwdHeader.CONSTRUCTOR_ID) : null;
+        viaBotId = (flags & 2048) != 0 ? readLong(stream) : null;
+        replyTo = (flags & 8) != 0 ? readTLObject(stream, context, TLMessageReplyHeader.class, TLMessageReplyHeader.CONSTRUCTOR_ID) : null;
         entities = (flags & 128) != 0 ? readTLVector(stream, context) : null;
+        ttlPeriod = (flags & 33554432) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -153,8 +151,8 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
         size += SIZE_INT32;
-        size += SIZE_INT32;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
+        size += SIZE_INT64;
         size += computeTLStringSerializedSize(message);
         size += SIZE_INT32;
         size += SIZE_INT32;
@@ -165,15 +163,19 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
         }
         if ((flags & 2048) != 0) {
             if (viaBotId == null) throwNullFieldException("viaBotId", flags);
-            size += SIZE_INT32;
+            size += SIZE_INT64;
         }
         if ((flags & 8) != 0) {
-            if (replyToMsgId == null) throwNullFieldException("replyToMsgId", flags);
-            size += SIZE_INT32;
+            if (replyTo == null) throwNullFieldException("replyTo", flags);
+            size += replyTo.computeSerializedSize();
         }
         if ((flags & 128) != 0) {
             if (entities == null) throwNullFieldException("entities", flags);
             size += entities.computeSerializedSize();
+        }
+        if ((flags & 33554432) != 0) {
+            if (ttlPeriod == null) throwNullFieldException("ttlPeriod", flags);
+            size += SIZE_INT32;
         }
         return size;
     }
@@ -228,19 +230,19 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
         this.id = id;
     }
 
-    public int getFromId() {
+    public long getFromId() {
         return fromId;
     }
 
-    public void setFromId(int fromId) {
+    public void setFromId(long fromId) {
         this.fromId = fromId;
     }
 
-    public int getChatId() {
+    public long getChatId() {
         return chatId;
     }
 
-    public void setChatId(int chatId) {
+    public void setChatId(long chatId) {
         this.chatId = chatId;
     }
 
@@ -284,20 +286,20 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
         this.fwdFrom = fwdFrom;
     }
 
-    public Integer getViaBotId() {
+    public Long getViaBotId() {
         return viaBotId;
     }
 
-    public void setViaBotId(Integer viaBotId) {
+    public void setViaBotId(Long viaBotId) {
         this.viaBotId = viaBotId;
     }
 
-    public Integer getReplyToMsgId() {
-        return replyToMsgId;
+    public TLMessageReplyHeader getReplyTo() {
+        return replyTo;
     }
 
-    public void setReplyToMsgId(Integer replyToMsgId) {
-        this.replyToMsgId = replyToMsgId;
+    public void setReplyTo(TLMessageReplyHeader replyTo) {
+        this.replyTo = replyTo;
     }
 
     public TLVector<TLAbsMessageEntity> getEntities() {
@@ -306,5 +308,13 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
 
     public void setEntities(TLVector<TLAbsMessageEntity> entities) {
         this.entities = entities;
+    }
+
+    public Integer getTtlPeriod() {
+        return ttlPeriod;
+    }
+
+    public void setTtlPeriod(Integer ttlPeriod) {
+        this.ttlPeriod = ttlPeriod;
     }
 }

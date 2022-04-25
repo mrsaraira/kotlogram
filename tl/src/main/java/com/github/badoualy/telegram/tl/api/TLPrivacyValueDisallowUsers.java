@@ -1,32 +1,28 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.core.TLIntVector;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLLongVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLIntVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLPrivacyValueDisallowUsers extends TLAbsPrivacyRule {
+    public static final int CONSTRUCTOR_ID = 0xe4621141;
 
-    public static final int CONSTRUCTOR_ID = 0xc7f49b7;
+    protected TLLongVector users;
 
-    protected TLIntVector users;
-
-    private final String _constructor = "privacyValueDisallowUsers#c7f49b7";
+    private final String _constructor = "privacyValueDisallowUsers#e4621141";
 
     public TLPrivacyValueDisallowUsers() {
     }
 
-    public TLPrivacyValueDisallowUsers(TLIntVector users) {
+    public TLPrivacyValueDisallowUsers(TLLongVector users) {
         this.users = users;
     }
 
@@ -38,7 +34,7 @@ public class TLPrivacyValueDisallowUsers extends TLAbsPrivacyRule {
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        users = readTLIntVector(stream, context);
+        users = readTLLongVector(stream, context);
     }
 
     @Override
@@ -58,11 +54,11 @@ public class TLPrivacyValueDisallowUsers extends TLAbsPrivacyRule {
         return CONSTRUCTOR_ID;
     }
 
-    public TLIntVector getUsers() {
+    public TLLongVector getUsers() {
         return users;
     }
 
-    public void setUsers(TLIntVector users) {
+    public void setUsers(TLLongVector users) {
         this.users = users;
     }
 }

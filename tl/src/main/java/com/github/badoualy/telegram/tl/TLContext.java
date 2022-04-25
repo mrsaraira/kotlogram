@@ -85,7 +85,7 @@ public abstract class TLContext {
      */
     @SuppressWarnings({"unchecked", "DuplicateThrows"})
     public final <T extends TLObject> T deserializeMessage(InputStream stream, Class<T> clazz, int constructorId) throws DeserializationException, IOException {
-        int realConstructorId = StreamUtils.readInt(stream);
+        int realConstructorId = com.github.badoualy.telegram.tl.StreamUtils.readInt(stream);
         if (constructorId != -1 && realConstructorId != constructorId) {
             throw new InvalidConstructorIdException(realConstructorId, constructorId);
         } else if (constructorId == -1) {
@@ -138,7 +138,7 @@ public abstract class TLContext {
     }
 
     private TLVector<?> deserializeVector(InputStream stream, TLVector<?> vector) throws IOException {
-        int constructorId = StreamUtils.readInt(stream);
+        int constructorId = com.github.badoualy.telegram.tl.StreamUtils.readInt(stream);
         if (constructorId == TLGzipObject.CONSTRUCTOR_ID)
             return deserializeVector(unzipStream(stream));
 

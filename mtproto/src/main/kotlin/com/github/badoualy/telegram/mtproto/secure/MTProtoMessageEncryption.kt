@@ -134,8 +134,8 @@ class MTProtoMessageEncryption {
             val session = readBytes(8, unencryptedStream)
             // Payload starts here
             val msgId = readLong(unencryptedStream)
-            val seqNo = StreamUtils.readInt(unencryptedStream)
-            val msgLength = StreamUtils.readInt(unencryptedStream)
+            val seqNo = readInt(unencryptedStream)
+            val msgLength = readInt(unencryptedStream)
             val paddingSize = encryptedDataLength - 32 - msgLength // serverSalt(8) + sessionId(8) + messageId(8) + seqNo(4) + msgLen(4)
 
             // Security checks

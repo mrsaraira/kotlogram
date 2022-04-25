@@ -1,29 +1,22 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
 import com.github.badoualy.telegram.tl.api.messages.TLAbsMessages;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLRequestMessagesGetHistory extends TLMethod<TLAbsMessages> {
-
-    public static final int CONSTRUCTOR_ID = 0xafa92846;
+    public static final int CONSTRUCTOR_ID = 0x4423e6c5;
 
     protected TLAbsInputPeer peer;
 
@@ -39,12 +32,14 @@ public class TLRequestMessagesGetHistory extends TLMethod<TLAbsMessages> {
 
     protected int minId;
 
-    private final String _constructor = "messages.getHistory#afa92846";
+    protected long hash;
+
+    private final String _constructor = "messages.getHistory#4423e6c5";
 
     public TLRequestMessagesGetHistory() {
     }
 
-    public TLRequestMessagesGetHistory(TLAbsInputPeer peer, int offsetId, int offsetDate, int addOffset, int limit, int maxId, int minId) {
+    public TLRequestMessagesGetHistory(TLAbsInputPeer peer, int offsetId, int offsetDate, int addOffset, int limit, int maxId, int minId, long hash) {
         this.peer = peer;
         this.offsetId = offsetId;
         this.offsetDate = offsetDate;
@@ -52,6 +47,7 @@ public class TLRequestMessagesGetHistory extends TLMethod<TLAbsMessages> {
         this.limit = limit;
         this.maxId = maxId;
         this.minId = minId;
+        this.hash = hash;
     }
 
     @Override
@@ -62,9 +58,7 @@ public class TLRequestMessagesGetHistory extends TLMethod<TLAbsMessages> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsMessages)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsMessages) response;
     }
@@ -78,6 +72,7 @@ public class TLRequestMessagesGetHistory extends TLMethod<TLAbsMessages> {
         writeInt(limit, stream);
         writeInt(maxId, stream);
         writeInt(minId, stream);
+        writeLong(hash, stream);
     }
 
     @Override
@@ -90,6 +85,7 @@ public class TLRequestMessagesGetHistory extends TLMethod<TLAbsMessages> {
         limit = readInt(stream);
         maxId = readInt(stream);
         minId = readInt(stream);
+        hash = readLong(stream);
     }
 
     @Override
@@ -102,6 +98,7 @@ public class TLRequestMessagesGetHistory extends TLMethod<TLAbsMessages> {
         size += SIZE_INT32;
         size += SIZE_INT32;
         size += SIZE_INT32;
+        size += SIZE_INT64;
         return size;
     }
 
@@ -169,5 +166,13 @@ public class TLRequestMessagesGetHistory extends TLMethod<TLAbsMessages> {
 
     public void setMinId(int minId) {
         this.minId = minId;
+    }
+
+    public long getHash() {
+        return hash;
+    }
+
+    public void setHash(long hash) {
+        this.hash = hash;
     }
 }

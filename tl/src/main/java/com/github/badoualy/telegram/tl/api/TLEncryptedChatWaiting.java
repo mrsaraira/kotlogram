@@ -1,41 +1,33 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLEncryptedChatWaiting extends TLAbsEncryptedChat {
-
-    public static final int CONSTRUCTOR_ID = 0x3bf703dc;
+    public static final int CONSTRUCTOR_ID = 0x66b25953;
 
     protected long accessHash;
 
     protected int date;
 
-    protected int adminId;
+    protected long adminId;
 
-    protected int participantId;
+    protected long participantId;
 
-    private final String _constructor = "encryptedChatWaiting#3bf703dc";
+    private final String _constructor = "encryptedChatWaiting#66b25953";
 
     public TLEncryptedChatWaiting() {
     }
 
-    public TLEncryptedChatWaiting(int id, long accessHash, int date, int adminId, int participantId) {
+    public TLEncryptedChatWaiting(int id, long accessHash, int date, long adminId, long participantId) {
         this.id = id;
         this.accessHash = accessHash;
         this.date = date;
@@ -48,8 +40,8 @@ public class TLEncryptedChatWaiting extends TLAbsEncryptedChat {
         writeInt(id, stream);
         writeLong(accessHash, stream);
         writeInt(date, stream);
-        writeInt(adminId, stream);
-        writeInt(participantId, stream);
+        writeLong(adminId, stream);
+        writeLong(participantId, stream);
     }
 
     @Override
@@ -58,8 +50,8 @@ public class TLEncryptedChatWaiting extends TLAbsEncryptedChat {
         id = readInt(stream);
         accessHash = readLong(stream);
         date = readInt(stream);
-        adminId = readInt(stream);
-        participantId = readInt(stream);
+        adminId = readLong(stream);
+        participantId = readLong(stream);
     }
 
     @Override
@@ -68,8 +60,8 @@ public class TLEncryptedChatWaiting extends TLAbsEncryptedChat {
         size += SIZE_INT32;
         size += SIZE_INT64;
         size += SIZE_INT32;
-        size += SIZE_INT32;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
+        size += SIZE_INT64;
         return size;
     }
 
@@ -107,19 +99,19 @@ public class TLEncryptedChatWaiting extends TLAbsEncryptedChat {
         this.date = date;
     }
 
-    public int getAdminId() {
+    public long getAdminId() {
         return adminId;
     }
 
-    public void setAdminId(int adminId) {
+    public void setAdminId(long adminId) {
         this.adminId = adminId;
     }
 
-    public int getParticipantId() {
+    public long getParticipantId() {
         return participantId;
     }
 
-    public void setParticipantId(int participantId) {
+    public void setParticipantId(long participantId) {
         this.participantId = participantId;
     }
 }

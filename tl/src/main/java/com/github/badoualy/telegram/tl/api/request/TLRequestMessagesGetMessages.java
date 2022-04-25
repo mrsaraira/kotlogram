@@ -1,36 +1,32 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.TLAbsInputMessage;
 import com.github.badoualy.telegram.tl.api.messages.TLAbsMessages;
-import com.github.badoualy.telegram.tl.core.TLIntVector;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
+import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLIntVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLRequestMessagesGetMessages extends TLMethod<TLAbsMessages> {
+    public static final int CONSTRUCTOR_ID = 0x63c66506;
 
-    public static final int CONSTRUCTOR_ID = 0x4222fa74;
+    protected TLVector<TLAbsInputMessage> id;
 
-    protected TLIntVector id;
-
-    private final String _constructor = "messages.getMessages#4222fa74";
+    private final String _constructor = "messages.getMessages#63c66506";
 
     public TLRequestMessagesGetMessages() {
     }
 
-    public TLRequestMessagesGetMessages(TLIntVector id) {
+    public TLRequestMessagesGetMessages(TLVector<TLAbsInputMessage> id) {
         this.id = id;
     }
 
@@ -42,9 +38,7 @@ public class TLRequestMessagesGetMessages extends TLMethod<TLAbsMessages> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsMessages)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsMessages) response;
     }
@@ -57,7 +51,7 @@ public class TLRequestMessagesGetMessages extends TLMethod<TLAbsMessages> {
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        id = readTLIntVector(stream, context);
+        id = readTLVector(stream, context);
     }
 
     @Override
@@ -77,11 +71,11 @@ public class TLRequestMessagesGetMessages extends TLMethod<TLAbsMessages> {
         return CONSTRUCTOR_ID;
     }
 
-    public TLIntVector getId() {
+    public TLVector<TLAbsInputMessage> getId() {
         return id;
     }
 
-    public void setId(TLIntVector id) {
+    public void setId(TLVector<TLAbsInputMessage> id) {
         this.id = id;
     }
 }

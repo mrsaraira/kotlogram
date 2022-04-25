@@ -24,13 +24,13 @@ object JavaPoet {
 
     val apiClazz = TypeSpec.interfaceBuilder(TELEGRAM_API_INTERFACE)
             .addModifiers(Modifier.PUBLIC)
-            .addJavadoc(JAVADOC_AUTHOR).addJavadoc(JAVADOC_SEE)
+//            .addJavadoc(JAVADOC_AUTHOR).addJavadoc(JAVADOC_SEE)
             .addAnnotation(AnnotationSpec.builder(SuppressWarnings::class.java).addMember("value", "{\"unused\", \"unchecked\", \"RedundantCast\"}").build())!!
     var apiMethod: MethodSpec.Builder? = null
 
     var apiWrappedClazz = TypeSpec.classBuilder(TELEGRAM_API_WRAPPER)
             .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-            .addJavadoc(JAVADOC_AUTHOR).addJavadoc(JAVADOC_SEE)
+//            .addJavadoc(JAVADOC_AUTHOR).addJavadoc(JAVADOC_SEE)
             .addSuperinterface(TYPE_TELEGRAM_API)
             .addAnnotation(AnnotationSpec.builder(SuppressWarnings::class.java).addMember("value", "{\"unused\", \"unchecked\", \"RedundantCast\"}").build())!!
     var apiWrappedMethod: MethodSpec.Builder? = null
@@ -138,8 +138,8 @@ object JavaPoet {
     private fun writeContext() {
         val contextClazz = TypeSpec.classBuilder(TL_API_CONTEXT)
                 .addModifiers(Modifier.PUBLIC)
-                .addJavadoc(JAVADOC_AUTHOR)
-                .addJavadoc(JAVADOC_SEE)
+//                .addJavadoc(JAVADOC_AUTHOR)
+//                .addJavadoc(JAVADOC_SEE)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings::class.java).addMember("value", "\"unused\"").build())
                 .superclass(TYPE_TL_CONTEXT)
 
@@ -171,8 +171,8 @@ object JavaPoet {
     private fun writeTestContext() {
         val contextClazz = TypeSpec.classBuilder(TL_API_TEST_CONTEXT)
                 .addModifiers(Modifier.PUBLIC)
-                .addJavadoc(JAVADOC_AUTHOR)
-                .addJavadoc(JAVADOC_SEE)
+//                .addJavadoc(JAVADOC_AUTHOR)
+//                .addJavadoc(JAVADOC_SEE)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings::class.java).addMember("value", "\"unused\"").build())
                 .superclass(TYPE_TL_CONTEXT)
 
@@ -249,8 +249,8 @@ object JavaPoet {
         }
 
         return clazz
-                .addJavadoc(JAVADOC_AUTHOR)
-                .addJavadoc(JAVADOC_SEE)
+//                .addJavadoc(JAVADOC_AUTHOR)
+//                .addJavadoc(JAVADOC_SEE)
                 .build()
     }
 
@@ -288,8 +288,8 @@ object JavaPoet {
         }
 
         return clazz
-                .addJavadoc(JAVADOC_AUTHOR)
-                .addJavadoc(JAVADOC_SEE)
+//                .addJavadoc(JAVADOC_AUTHOR)
+//                .addJavadoc(JAVADOC_SEE)
                 .build()
     }
 
@@ -299,8 +299,8 @@ object JavaPoet {
         val clazzTypeName = ClassName.get(PACKAGE_TL_API_REQUEST, clazzName)
         val clazz = TypeSpec.classBuilder(clazzName)
                 .addModifiers(Modifier.PUBLIC)
-                .addJavadoc(JAVADOC_AUTHOR)
-                .addJavadoc(JAVADOC_SEE)
+//                .addJavadoc(JAVADOC_AUTHOR)
+//                .addJavadoc(JAVADOC_SEE)
                 .superclass(ParameterizedTypeName.get(TYPE_TL_METHOD, responseType))
 
         val deserializeResponseMethod = MethodSpec.methodBuilder("deserializeResponse")

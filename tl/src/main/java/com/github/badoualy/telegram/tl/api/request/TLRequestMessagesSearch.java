@@ -1,33 +1,24 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
 import com.github.badoualy.telegram.tl.api.TLAbsMessagesFilter;
 import com.github.badoualy.telegram.tl.api.messages.TLAbsMessages;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLRequestMessagesSearch extends TLMethod<TLAbsMessages> {
-
-    public static final int CONSTRUCTOR_ID = 0xd4569248;
+    public static final int CONSTRUCTOR_ID = 0xa0fda762;
 
     protected int flags;
 
@@ -35,32 +26,47 @@ public class TLRequestMessagesSearch extends TLMethod<TLAbsMessages> {
 
     protected String q;
 
+    protected TLAbsInputPeer fromId;
+
+    protected Integer topMsgId;
+
     protected TLAbsMessagesFilter filter;
 
     protected int minDate;
 
     protected int maxDate;
 
-    protected int offset;
+    protected int offsetId;
 
-    protected int maxId;
+    protected int addOffset;
 
     protected int limit;
 
-    private final String _constructor = "messages.search#d4569248";
+    protected int maxId;
+
+    protected int minId;
+
+    protected long hash;
+
+    private final String _constructor = "messages.search#a0fda762";
 
     public TLRequestMessagesSearch() {
     }
 
-    public TLRequestMessagesSearch(TLAbsInputPeer peer, String q, TLAbsMessagesFilter filter, int minDate, int maxDate, int offset, int maxId, int limit) {
+    public TLRequestMessagesSearch(TLAbsInputPeer peer, String q, TLAbsInputPeer fromId, Integer topMsgId, TLAbsMessagesFilter filter, int minDate, int maxDate, int offsetId, int addOffset, int limit, int maxId, int minId, long hash) {
         this.peer = peer;
         this.q = q;
+        this.fromId = fromId;
+        this.topMsgId = topMsgId;
         this.filter = filter;
         this.minDate = minDate;
         this.maxDate = maxDate;
-        this.offset = offset;
-        this.maxId = maxId;
+        this.offsetId = offsetId;
+        this.addOffset = addOffset;
         this.limit = limit;
+        this.maxId = maxId;
+        this.minId = minId;
+        this.hash = hash;
     }
 
     @Override
@@ -71,24 +77,41 @@ public class TLRequestMessagesSearch extends TLMethod<TLAbsMessages> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsMessages)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsMessages) response;
     }
 
+    private void computeFlags() {
+        flags = 0;
+        flags = fromId != null ? (flags | 1) : (flags & ~1);
+        flags = topMsgId != null ? (flags | 2) : (flags & ~2);
+    }
+
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
+        computeFlags();
+
         writeInt(flags, stream);
         writeTLObject(peer, stream);
         writeString(q, stream);
+        if ((flags & 1) != 0) {
+            if (fromId == null) throwNullFieldException("fromId", flags);
+            writeTLObject(fromId, stream);
+        }
+        if ((flags & 2) != 0) {
+            if (topMsgId == null) throwNullFieldException("topMsgId", flags);
+            writeInt(topMsgId, stream);
+        }
         writeTLObject(filter, stream);
         writeInt(minDate, stream);
         writeInt(maxDate, stream);
-        writeInt(offset, stream);
-        writeInt(maxId, stream);
+        writeInt(offsetId, stream);
+        writeInt(addOffset, stream);
         writeInt(limit, stream);
+        writeInt(maxId, stream);
+        writeInt(minId, stream);
+        writeLong(hash, stream);
     }
 
     @Override
@@ -97,26 +120,44 @@ public class TLRequestMessagesSearch extends TLMethod<TLAbsMessages> {
         flags = readInt(stream);
         peer = readTLObject(stream, context, TLAbsInputPeer.class, -1);
         q = readTLString(stream);
+        fromId = (flags & 1) != 0 ? readTLObject(stream, context, TLAbsInputPeer.class, -1) : null;
+        topMsgId = (flags & 2) != 0 ? readInt(stream) : null;
         filter = readTLObject(stream, context, TLAbsMessagesFilter.class, -1);
         minDate = readInt(stream);
         maxDate = readInt(stream);
-        offset = readInt(stream);
-        maxId = readInt(stream);
+        offsetId = readInt(stream);
+        addOffset = readInt(stream);
         limit = readInt(stream);
+        maxId = readInt(stream);
+        minId = readInt(stream);
+        hash = readLong(stream);
     }
 
     @Override
     public int computeSerializedSize() {
+        computeFlags();
+
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
         size += peer.computeSerializedSize();
         size += computeTLStringSerializedSize(q);
+        if ((flags & 1) != 0) {
+            if (fromId == null) throwNullFieldException("fromId", flags);
+            size += fromId.computeSerializedSize();
+        }
+        if ((flags & 2) != 0) {
+            if (topMsgId == null) throwNullFieldException("topMsgId", flags);
+            size += SIZE_INT32;
+        }
         size += filter.computeSerializedSize();
         size += SIZE_INT32;
         size += SIZE_INT32;
         size += SIZE_INT32;
         size += SIZE_INT32;
         size += SIZE_INT32;
+        size += SIZE_INT32;
+        size += SIZE_INT32;
+        size += SIZE_INT64;
         return size;
     }
 
@@ -146,6 +187,22 @@ public class TLRequestMessagesSearch extends TLMethod<TLAbsMessages> {
         this.q = q;
     }
 
+    public TLAbsInputPeer getFromId() {
+        return fromId;
+    }
+
+    public void setFromId(TLAbsInputPeer fromId) {
+        this.fromId = fromId;
+    }
+
+    public Integer getTopMsgId() {
+        return topMsgId;
+    }
+
+    public void setTopMsgId(Integer topMsgId) {
+        this.topMsgId = topMsgId;
+    }
+
     public TLAbsMessagesFilter getFilter() {
         return filter;
     }
@@ -170,12 +227,28 @@ public class TLRequestMessagesSearch extends TLMethod<TLAbsMessages> {
         this.maxDate = maxDate;
     }
 
-    public int getOffset() {
-        return offset;
+    public int getOffsetId() {
+        return offsetId;
     }
 
-    public void setOffset(int offset) {
-        this.offset = offset;
+    public void setOffsetId(int offsetId) {
+        this.offsetId = offsetId;
+    }
+
+    public int getAddOffset() {
+        return addOffset;
+    }
+
+    public void setAddOffset(int addOffset) {
+        this.addOffset = addOffset;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
     }
 
     public int getMaxId() {
@@ -186,11 +259,19 @@ public class TLRequestMessagesSearch extends TLMethod<TLAbsMessages> {
         this.maxId = maxId;
     }
 
-    public int getLimit() {
-        return limit;
+    public int getMinId() {
+        return minId;
     }
 
-    public void setLimit(int limit) {
-        this.limit = limit;
+    public void setMinId(int minId) {
+        this.minId = minId;
+    }
+
+    public long getHash() {
+        return hash;
+    }
+
+    public void setHash(long hash) {
+        this.hash = hash;
     }
 }

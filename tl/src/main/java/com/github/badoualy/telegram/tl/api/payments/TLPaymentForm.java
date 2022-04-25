@@ -1,5 +1,8 @@
 package com.github.badoualy.telegram.tl.api.payments;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsUser;
 import com.github.badoualy.telegram.tl.api.TLDataJSON;
@@ -8,30 +11,15 @@ import com.github.badoualy.telegram.tl.api.TLPaymentRequestedInfo;
 import com.github.badoualy.telegram.tl.api.TLPaymentSavedCredentialsCard;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLPaymentForm extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0x3f56aea3;
+    public static final int CONSTRUCTOR_ID = 0x1694761b;
 
     protected int flags;
 
@@ -39,11 +27,13 @@ public class TLPaymentForm extends TLObject {
 
     protected boolean passwordMissing;
 
-    protected int botId;
+    protected long formId;
+
+    protected long botId;
 
     protected TLInvoice invoice;
 
-    protected int providerId;
+    protected long providerId;
 
     protected String url;
 
@@ -57,14 +47,15 @@ public class TLPaymentForm extends TLObject {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "payments.paymentForm#3f56aea3";
+    private final String _constructor = "payments.paymentForm#1694761b";
 
     public TLPaymentForm() {
     }
 
-    public TLPaymentForm(boolean canSaveCredentials, boolean passwordMissing, int botId, TLInvoice invoice, int providerId, String url, String nativeProvider, TLDataJSON nativeParams, TLPaymentRequestedInfo savedInfo, TLPaymentSavedCredentialsCard savedCredentials, TLVector<TLAbsUser> users) {
+    public TLPaymentForm(boolean canSaveCredentials, boolean passwordMissing, long formId, long botId, TLInvoice invoice, long providerId, String url, String nativeProvider, TLDataJSON nativeParams, TLPaymentRequestedInfo savedInfo, TLPaymentSavedCredentialsCard savedCredentials, TLVector<TLAbsUser> users) {
         this.canSaveCredentials = canSaveCredentials;
         this.passwordMissing = passwordMissing;
+        this.formId = formId;
         this.botId = botId;
         this.invoice = invoice;
         this.providerId = providerId;
@@ -91,9 +82,10 @@ public class TLPaymentForm extends TLObject {
         computeFlags();
 
         writeInt(flags, stream);
-        writeInt(botId, stream);
+        writeLong(formId, stream);
+        writeLong(botId, stream);
         writeTLObject(invoice, stream);
-        writeInt(providerId, stream);
+        writeLong(providerId, stream);
         writeString(url, stream);
         if ((flags & 16) != 0) {
             if (nativeProvider == null) throwNullFieldException("nativeProvider", flags);
@@ -120,17 +112,15 @@ public class TLPaymentForm extends TLObject {
         flags = readInt(stream);
         canSaveCredentials = (flags & 4) != 0;
         passwordMissing = (flags & 8) != 0;
-        botId = readInt(stream);
+        formId = readLong(stream);
+        botId = readLong(stream);
         invoice = readTLObject(stream, context, TLInvoice.class, TLInvoice.CONSTRUCTOR_ID);
-        providerId = readInt(stream);
+        providerId = readLong(stream);
         url = readTLString(stream);
         nativeProvider = (flags & 16) != 0 ? readTLString(stream) : null;
-        nativeParams = (flags & 16) != 0 ? readTLObject(stream, context, TLDataJSON.class,
-                                                        TLDataJSON.CONSTRUCTOR_ID) : null;
-        savedInfo = (flags & 1) != 0 ? readTLObject(stream, context, TLPaymentRequestedInfo.class,
-                                                    TLPaymentRequestedInfo.CONSTRUCTOR_ID) : null;
-        savedCredentials = (flags & 2) != 0 ? readTLObject(stream, context, TLPaymentSavedCredentialsCard.class,
-                                                           TLPaymentSavedCredentialsCard.CONSTRUCTOR_ID) : null;
+        nativeParams = (flags & 16) != 0 ? readTLObject(stream, context, TLDataJSON.class, TLDataJSON.CONSTRUCTOR_ID) : null;
+        savedInfo = (flags & 1) != 0 ? readTLObject(stream, context, TLPaymentRequestedInfo.class, TLPaymentRequestedInfo.CONSTRUCTOR_ID) : null;
+        savedCredentials = (flags & 2) != 0 ? readTLObject(stream, context, TLPaymentSavedCredentialsCard.class, TLPaymentSavedCredentialsCard.CONSTRUCTOR_ID) : null;
         users = readTLVector(stream, context);
     }
 
@@ -140,9 +130,10 @@ public class TLPaymentForm extends TLObject {
 
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
+        size += SIZE_INT64;
         size += invoice.computeSerializedSize();
-        size += SIZE_INT32;
+        size += SIZE_INT64;
         size += computeTLStringSerializedSize(url);
         if ((flags & 16) != 0) {
             if (nativeProvider == null) throwNullFieldException("nativeProvider", flags);
@@ -190,11 +181,19 @@ public class TLPaymentForm extends TLObject {
         this.passwordMissing = passwordMissing;
     }
 
-    public int getBotId() {
+    public long getFormId() {
+        return formId;
+    }
+
+    public void setFormId(long formId) {
+        this.formId = formId;
+    }
+
+    public long getBotId() {
         return botId;
     }
 
-    public void setBotId(int botId) {
+    public void setBotId(long botId) {
         this.botId = botId;
     }
 
@@ -206,11 +205,11 @@ public class TLPaymentForm extends TLObject {
         this.invoice = invoice;
     }
 
-    public int getProviderId() {
+    public long getProviderId() {
         return providerId;
     }
 
-    public void setProviderId(int providerId) {
+    public void setProviderId(long providerId) {
         this.providerId = providerId;
     }
 

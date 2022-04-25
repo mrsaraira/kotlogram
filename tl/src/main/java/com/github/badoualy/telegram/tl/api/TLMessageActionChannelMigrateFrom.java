@@ -1,37 +1,29 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLMessageActionChannelMigrateFrom extends TLAbsMessageAction {
-
-    public static final int CONSTRUCTOR_ID = 0xb055eaee;
+    public static final int CONSTRUCTOR_ID = 0xea3948e9;
 
     protected String title;
 
-    protected int chatId;
+    protected long chatId;
 
-    private final String _constructor = "messageActionChannelMigrateFrom#b055eaee";
+    private final String _constructor = "messageActionChannelMigrateFrom#ea3948e9";
 
     public TLMessageActionChannelMigrateFrom() {
     }
 
-    public TLMessageActionChannelMigrateFrom(String title, int chatId) {
+    public TLMessageActionChannelMigrateFrom(String title, long chatId) {
         this.title = title;
         this.chatId = chatId;
     }
@@ -39,21 +31,21 @@ public class TLMessageActionChannelMigrateFrom extends TLAbsMessageAction {
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
         writeString(title, stream);
-        writeInt(chatId, stream);
+        writeLong(chatId, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         title = readTLString(stream);
-        chatId = readInt(stream);
+        chatId = readLong(stream);
     }
 
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
         size += computeTLStringSerializedSize(title);
-        size += SIZE_INT32;
+        size += SIZE_INT64;
         return size;
     }
 
@@ -75,11 +67,11 @@ public class TLMessageActionChannelMigrateFrom extends TLAbsMessageAction {
         this.title = title;
     }
 
-    public int getChatId() {
+    public long getChatId() {
         return chatId;
     }
 
-    public void setChatId(int chatId) {
+    public void setChatId(long chatId) {
         this.chatId = chatId;
     }
 }

@@ -1,11 +1,12 @@
 package com.github.badoualy.telegram.tl.api;
 
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
-public class TLChannelMessagesFilterEmpty extends TLAbsChannelMessagesFilter {
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import java.lang.Override;
+import java.lang.String;
+
+public class TLChannelMessagesFilterEmpty extends TLAbsChannelMessagesFilter {
     public static final int CONSTRUCTOR_ID = 0x94d42ee7;
 
     private final String _constructor = "channelMessagesFilterEmpty#94d42ee7";

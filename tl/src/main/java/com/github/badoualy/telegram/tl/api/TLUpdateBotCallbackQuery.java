@@ -1,41 +1,25 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLBytes;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLUpdateBotCallbackQuery extends TLAbsUpdate {
-
-    public static final int CONSTRUCTOR_ID = 0xe73547e1;
+    public static final int CONSTRUCTOR_ID = 0xb9cfc48d;
 
     protected int flags;
 
     protected long queryId;
 
-    protected int userId;
+    protected long userId;
 
     protected TLAbsPeer peer;
 
@@ -47,12 +31,12 @@ public class TLUpdateBotCallbackQuery extends TLAbsUpdate {
 
     protected String gameShortName;
 
-    private final String _constructor = "updateBotCallbackQuery#e73547e1";
+    private final String _constructor = "updateBotCallbackQuery#b9cfc48d";
 
     public TLUpdateBotCallbackQuery() {
     }
 
-    public TLUpdateBotCallbackQuery(long queryId, int userId, TLAbsPeer peer, int msgId, long chatInstance, TLBytes data, String gameShortName) {
+    public TLUpdateBotCallbackQuery(long queryId, long userId, TLAbsPeer peer, int msgId, long chatInstance, TLBytes data, String gameShortName) {
         this.queryId = queryId;
         this.userId = userId;
         this.peer = peer;
@@ -74,7 +58,7 @@ public class TLUpdateBotCallbackQuery extends TLAbsUpdate {
 
         writeInt(flags, stream);
         writeLong(queryId, stream);
-        writeInt(userId, stream);
+        writeLong(userId, stream);
         writeTLObject(peer, stream);
         writeInt(msgId, stream);
         writeLong(chatInstance, stream);
@@ -93,7 +77,7 @@ public class TLUpdateBotCallbackQuery extends TLAbsUpdate {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         queryId = readLong(stream);
-        userId = readInt(stream);
+        userId = readLong(stream);
         peer = readTLObject(stream, context, TLAbsPeer.class, -1);
         msgId = readInt(stream);
         chatInstance = readLong(stream);
@@ -108,7 +92,7 @@ public class TLUpdateBotCallbackQuery extends TLAbsUpdate {
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
         size += SIZE_INT64;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
         size += peer.computeSerializedSize();
         size += SIZE_INT32;
         size += SIZE_INT64;
@@ -141,11 +125,11 @@ public class TLUpdateBotCallbackQuery extends TLAbsUpdate {
         this.queryId = queryId;
     }
 
-    public int getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 

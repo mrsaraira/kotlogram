@@ -13,6 +13,7 @@ import com.github.badoualy.telegram.mtproto.time.MTProtoTimer
 import com.github.badoualy.telegram.tl.api.*
 import com.github.badoualy.telegram.tl.api.account.TLPassword
 import com.github.badoualy.telegram.tl.api.auth.TLAuthorization
+import com.github.badoualy.telegram.tl.api.auth.TLSentCode
 import com.github.badoualy.telegram.tl.api.request.*
 import com.github.badoualy.telegram.tl.api.upload.TLAbsFile
 import com.github.badoualy.telegram.tl.api.upload.TLFile
@@ -38,6 +39,7 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
     private var authKey: AuthKey? = null
     private var dataCenter: DataCenter? = null
     private var closed = false
+    private val codeSettings = TLCodeSettings();
 
     private val authKeyMap = HashMap<Int, AuthKey>()
     private val exportedHandlerMap = HashMap<Int, MTProtoHandler>()
@@ -122,11 +124,11 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
                                                             application.deviceModel,
                                                             application.systemVersion,
                                                             application.appVersion,
-                                                            application.langCode, method)
+                                                            application.langCode, "","en",null,null,method)
         val result = executeRpcQuery(
                 TLRequestInvokeWithLayer(Kotlogram.API_LAYER, initConnectionRequest),
                 mtProtoHandler)
-        return result
+        return result as T
     }
 
     @Throws(RpcErrorException::class, IOException::class)
@@ -261,56 +263,87 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
         }
     }
 
-    override fun downloadSync(inputLocation: InputFileLocation, size: Int, partSize: Int, outputStream: OutputStream) {
-        var offset = 0
-        val methods = ArrayList<TLMethod<TLAbsFile>>()
-        do {
-            methods.clear()
-            for (i in 0..5) {
-                methods.add(TLRequestUploadGetFile(inputLocation.inputFileLocation,
-                                                   offset,
-                                                   partSize))
-                offset += partSize
-                if (offset >= size)
-                    break
-            }
-
-            // TODO: handle CDN
-            executeRpcQueries(methods, inputLocation.dcId)
-                    .onEach {
-                        if (it is TLFileCdnRedirect)
-                            throw IOException("Unhandled CDN redirection")
-                    }
-                    .filterIsInstance<TLFile>()
-                    .forEach { part -> outputStream.write(part.bytes.data) }
-            outputStream.flush()
-        } while (offset < size)
-
-        outputStream.flush()
-        outputStream.close()
-    }
+//    override fun downloadSync(inputLocation: InputFileLocation, size: Int, partSize: Int, outputStream: OutputStream) {
+//        var offset = 0
+//        val methods = ArrayList<TLMethod<TLAbsFile>>()
+//        do {
+//            methods.clear()
+//            for (i in 0..5) {
+//                methods.add(TLRequestUploadGetFile(inputLocation.inputFileLocation,
+//                                                   offset,
+//                                                   partSize))
+//                offset += partSize
+//                if (offset >= size)
+//                    break
+//            }
+//
+//            // TODO: handle CDN
+//            executeRpcQueries(methods, inputLocation.dcId)
+//                    .onEach {
+//                        if (it is TLFileCdnRedirect)
+//                            throw IOException("Unhandled CDN redirection")
+//                    }
+//                    .filterIsInstance<TLFile>()
+//                    .forEach { part -> outputStream.write(part.bytes.data) }
+//            outputStream.flush()
+//        } while (offset < size)
+//
+//        outputStream.flush()
+//        outputStream.close()
+//    }
 
     @Throws(RpcErrorException::class, IOException::class)
-    override fun authSendCode(allowFlashcall: Boolean, phoneNumber: String, currentNumber: Boolean) = super.authSendCode(
-            allowFlashcall, phoneNumber, currentNumber, application.apiId, application.apiHash)!!
+    override fun authSendCode(allowFlashcall: Boolean, phoneNumber: String, currentNumber: Boolean): TLSentCode = super.authSendCode(phoneNumber,
+              application.apiId, application.apiHash, codeSettings)!!
+
+    override fun authSendCode(
+        allowFlashcall: Boolean,
+        phoneNumber: String?,
+        currentNumber: Boolean,
+        apiId: Int,
+        apiHash: String?
+    ): TLSentCode {
+        return super.authSendCode(phoneNumber, apiId, apiHash, codeSettings)!!
+    }
+
 
     @Throws(RpcErrorException::class, IOException::class)
     override fun authCheckPassword(password: String): TLAuthorization {
         val tlPassword = accountGetPassword() as? TLPassword
                 ?: throw RpcErrorException(400, "NO_PASSWORD")
-        val passwordHash = CryptoUtils.encodePasswordHash(tlPassword.currentSalt.data, password)
-        return executeRpcQuery(TLRequestAuthCheckPassword(TLBytes(passwordHash)))
+        val passwordHash = CryptoUtils.encodePasswordHash(tlPassword.secureRandom.data, password)
+//        return executeRpcQuery(TLRequestAuthCheckPassword(password)) as TLAuthorization
+        return TLAuthorization();
+    }
+
+    override fun authCheckPassword(passwordHash: TLBytes?): TLAuthorization {
+        TODO("Not yet implemented")
     }
 
     @Throws(RpcErrorException::class, IOException::class)
     override fun <T : TLObject> initConnection(query: TLMethod<T>) = executeRpcQuery(
             TLRequestInitConnection(application.apiId, application.deviceModel,
                                     application.systemVersion, application.appVersion,
-                                    application.langCode, query))!!
+                                    application.langCode, "eng", "eng", null,null,query))!!
+
+    override fun <T : TLObject?> initConnection(
+        apiId: Int,
+        deviceModel: String,
+        systemVersion: String,
+        appVersion: String,
+        langCode: String,
+        query: TLMethod<T>
+    ): T {
+        return TLNull() as T
+    }
 
     @Throws(RpcErrorException::class, IOException::class)
     override fun messagesSendMessage(peer: TLAbsInputPeer, message: String, randomId: Long) = super.messagesSendMessage(
-            true, false, false, false, peer, null, message, randomId, null, null)!!
+            true, false, false, false,true, peer, null, message, randomId, null, null,null,peer)!!
+
+    override fun downloadSync(inputLocation: InputFileLocation, size: Int, partSize: Int, outputStream: OutputStream) {
+        TODO("Not yet implemented")
+    }
 
     private fun migrate(dcId: Int) {
         logger.info(marker, "Migrating to DC$dcId")

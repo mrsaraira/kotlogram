@@ -1,32 +1,22 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLUpdateBotInlineSend extends TLAbsUpdate {
-
-    public static final int CONSTRUCTOR_ID = 0xe48f964;
+    public static final int CONSTRUCTOR_ID = 0x12f12a07;
 
     protected int flags;
 
-    protected int userId;
+    protected long userId;
 
     protected String query;
 
@@ -34,14 +24,14 @@ public class TLUpdateBotInlineSend extends TLAbsUpdate {
 
     protected String id;
 
-    protected TLInputBotInlineMessageID msgId;
+    protected TLAbsInputBotInlineMessageID msgId;
 
-    private final String _constructor = "updateBotInlineSend#e48f964";
+    private final String _constructor = "updateBotInlineSend#12f12a07";
 
     public TLUpdateBotInlineSend() {
     }
 
-    public TLUpdateBotInlineSend(int userId, String query, TLAbsGeoPoint geo, String id, TLInputBotInlineMessageID msgId) {
+    public TLUpdateBotInlineSend(long userId, String query, TLAbsGeoPoint geo, String id, TLAbsInputBotInlineMessageID msgId) {
         this.userId = userId;
         this.query = query;
         this.geo = geo;
@@ -60,7 +50,7 @@ public class TLUpdateBotInlineSend extends TLAbsUpdate {
         computeFlags();
 
         writeInt(flags, stream);
-        writeInt(userId, stream);
+        writeLong(userId, stream);
         writeString(query, stream);
         if ((flags & 1) != 0) {
             if (geo == null) throwNullFieldException("geo", flags);
@@ -77,12 +67,11 @@ public class TLUpdateBotInlineSend extends TLAbsUpdate {
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
-        userId = readInt(stream);
+        userId = readLong(stream);
         query = readTLString(stream);
         geo = (flags & 1) != 0 ? readTLObject(stream, context, TLAbsGeoPoint.class, -1) : null;
         id = readTLString(stream);
-        msgId = (flags & 2) != 0 ? readTLObject(stream, context, TLInputBotInlineMessageID.class,
-                                                TLInputBotInlineMessageID.CONSTRUCTOR_ID) : null;
+        msgId = (flags & 2) != 0 ? readTLObject(stream, context, TLAbsInputBotInlineMessageID.class, -1) : null;
     }
 
     @Override
@@ -91,7 +80,7 @@ public class TLUpdateBotInlineSend extends TLAbsUpdate {
 
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
         size += computeTLStringSerializedSize(query);
         if ((flags & 1) != 0) {
             if (geo == null) throwNullFieldException("geo", flags);
@@ -115,11 +104,11 @@ public class TLUpdateBotInlineSend extends TLAbsUpdate {
         return CONSTRUCTOR_ID;
     }
 
-    public int getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 
@@ -147,11 +136,11 @@ public class TLUpdateBotInlineSend extends TLAbsUpdate {
         this.id = id;
     }
 
-    public TLInputBotInlineMessageID getMsgId() {
+    public TLAbsInputBotInlineMessageID getMsgId() {
         return msgId;
     }
 
-    public void setMsgId(TLInputBotInlineMessageID msgId) {
+    public void setMsgId(TLAbsInputBotInlineMessageID msgId) {
         this.msgId = msgId;
     }
 }

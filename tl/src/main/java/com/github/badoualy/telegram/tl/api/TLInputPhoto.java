@@ -1,42 +1,42 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLBytes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLInputPhoto extends TLAbsInputPhoto {
-
-    public static final int CONSTRUCTOR_ID = 0xfb95c6c4;
+    public static final int CONSTRUCTOR_ID = 0x3bb3b94a;
 
     protected long id;
 
     protected long accessHash;
 
-    private final String _constructor = "inputPhoto#fb95c6c4";
+    protected TLBytes fileReference;
+
+    private final String _constructor = "inputPhoto#3bb3b94a";
 
     public TLInputPhoto() {
     }
 
-    public TLInputPhoto(long id, long accessHash) {
+    public TLInputPhoto(long id, long accessHash, TLBytes fileReference) {
         this.id = id;
         this.accessHash = accessHash;
+        this.fileReference = fileReference;
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
         writeLong(id, stream);
         writeLong(accessHash, stream);
+        writeTLBytes(fileReference, stream);
     }
 
     @Override
@@ -44,6 +44,7 @@ public class TLInputPhoto extends TLAbsInputPhoto {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         id = readLong(stream);
         accessHash = readLong(stream);
+        fileReference = readTLBytes(stream, context);
     }
 
     @Override
@@ -51,6 +52,7 @@ public class TLInputPhoto extends TLAbsInputPhoto {
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT64;
         size += SIZE_INT64;
+        size += computeTLBytesSerializedSize(fileReference);
         return size;
     }
 
@@ -78,6 +80,14 @@ public class TLInputPhoto extends TLAbsInputPhoto {
 
     public void setAccessHash(long accessHash) {
         this.accessHash = accessHash;
+    }
+
+    public TLBytes getFileReference() {
+        return fileReference;
+    }
+
+    public void setFileReference(TLBytes fileReference) {
+        this.fileReference = fileReference;
     }
 
     @Override

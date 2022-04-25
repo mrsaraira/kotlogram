@@ -1,36 +1,30 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.messages.TLAbsAllStickers;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLRequestMessagesGetMaskStickers extends TLMethod<TLAbsAllStickers> {
+    public static final int CONSTRUCTOR_ID = 0x640f82b8;
 
-    public static final int CONSTRUCTOR_ID = 0x65b8c79f;
+    protected long hash;
 
-    protected int hash;
-
-    private final String _constructor = "messages.getMaskStickers#65b8c79f";
+    private final String _constructor = "messages.getMaskStickers#640f82b8";
 
     public TLRequestMessagesGetMaskStickers() {
     }
 
-    public TLRequestMessagesGetMaskStickers(int hash) {
+    public TLRequestMessagesGetMaskStickers(long hash) {
         this.hash = hash;
     }
 
@@ -42,28 +36,26 @@ public class TLRequestMessagesGetMaskStickers extends TLMethod<TLAbsAllStickers>
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsAllStickers)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsAllStickers) response;
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
-        writeInt(hash, stream);
+        writeLong(hash, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        hash = readInt(stream);
+        hash = readLong(stream);
     }
 
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
         return size;
     }
 
@@ -77,11 +69,11 @@ public class TLRequestMessagesGetMaskStickers extends TLMethod<TLAbsAllStickers>
         return CONSTRUCTOR_ID;
     }
 
-    public int getHash() {
+    public long getHash() {
         return hash;
     }
 
-    public void setHash(int hash) {
+    public void setHash(long hash) {
         this.hash = hash;
     }
 }

@@ -1,39 +1,38 @@
 package com.github.badoualy.telegram.tl.api.contacts;
 
-import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.api.TLAbsUser;
-import com.github.badoualy.telegram.tl.api.TLContactBlocked;
-import com.github.badoualy.telegram.tl.core.TLVector;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.TLAbsChat;
+import com.github.badoualy.telegram.tl.api.TLAbsUser;
+import com.github.badoualy.telegram.tl.api.TLPeerBlocked;
+import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLBlocked extends TLAbsBlocked {
+    public static final int CONSTRUCTOR_ID = 0xade1591;
 
-    public static final int CONSTRUCTOR_ID = 0x1c138d15;
-
-    private final String _constructor = "contacts.blocked#1c138d15";
+    private final String _constructor = "contacts.blocked#ade1591";
 
     public TLBlocked() {
     }
 
-    public TLBlocked(TLVector<TLContactBlocked> blocked, TLVector<TLAbsUser> users) {
+    public TLBlocked(TLVector<TLPeerBlocked> blocked, TLVector<TLAbsChat> chats, TLVector<TLAbsUser> users) {
         this.blocked = blocked;
+        this.chats = chats;
         this.users = users;
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
         writeTLVector(blocked, stream);
+        writeTLVector(chats, stream);
         writeTLVector(users, stream);
     }
 
@@ -41,6 +40,7 @@ public class TLBlocked extends TLAbsBlocked {
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         blocked = readTLVector(stream, context);
+        chats = readTLVector(stream, context);
         users = readTLVector(stream, context);
     }
 
@@ -48,6 +48,7 @@ public class TLBlocked extends TLAbsBlocked {
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
         size += blocked.computeSerializedSize();
+        size += chats.computeSerializedSize();
         size += users.computeSerializedSize();
         return size;
     }
@@ -62,12 +63,20 @@ public class TLBlocked extends TLAbsBlocked {
         return CONSTRUCTOR_ID;
     }
 
-    public TLVector<TLContactBlocked> getBlocked() {
+    public TLVector<TLPeerBlocked> getBlocked() {
         return blocked;
     }
 
-    public void setBlocked(TLVector<TLContactBlocked> blocked) {
+    public void setBlocked(TLVector<TLPeerBlocked> blocked) {
         this.blocked = blocked;
+    }
+
+    public TLVector<TLAbsChat> getChats() {
+        return chats;
+    }
+
+    public void setChats(TLVector<TLAbsChat> chats) {
+        this.chats = chats;
     }
 
     public TLVector<TLAbsUser> getUsers() {

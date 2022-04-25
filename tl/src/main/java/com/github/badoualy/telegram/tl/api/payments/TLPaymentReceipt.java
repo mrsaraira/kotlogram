@@ -1,53 +1,48 @@
 package com.github.badoualy.telegram.tl.api.payments;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsUser;
+import com.github.badoualy.telegram.tl.api.TLAbsWebDocument;
 import com.github.badoualy.telegram.tl.api.TLInvoice;
 import com.github.badoualy.telegram.tl.api.TLPaymentRequestedInfo;
 import com.github.badoualy.telegram.tl.api.TLShippingOption;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Long;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLPaymentReceipt extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0x500911e1;
+    public static final int CONSTRUCTOR_ID = 0x70c4fe03;
 
     protected int flags;
 
     protected int date;
 
-    protected int botId;
+    protected long botId;
+
+    protected long providerId;
+
+    protected String title;
+
+    protected String description;
+
+    protected TLAbsWebDocument photo;
 
     protected TLInvoice invoice;
-
-    protected int providerId;
 
     protected TLPaymentRequestedInfo info;
 
     protected TLShippingOption shipping;
+
+    protected Long tipAmount;
 
     protected String currency;
 
@@ -57,18 +52,22 @@ public class TLPaymentReceipt extends TLObject {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "payments.paymentReceipt#500911e1";
+    private final String _constructor = "payments.paymentReceipt#70c4fe03";
 
     public TLPaymentReceipt() {
     }
 
-    public TLPaymentReceipt(int date, int botId, TLInvoice invoice, int providerId, TLPaymentRequestedInfo info, TLShippingOption shipping, String currency, long totalAmount, String credentialsTitle, TLVector<TLAbsUser> users) {
+    public TLPaymentReceipt(int date, long botId, long providerId, String title, String description, TLAbsWebDocument photo, TLInvoice invoice, TLPaymentRequestedInfo info, TLShippingOption shipping, Long tipAmount, String currency, long totalAmount, String credentialsTitle, TLVector<TLAbsUser> users) {
         this.date = date;
         this.botId = botId;
-        this.invoice = invoice;
         this.providerId = providerId;
+        this.title = title;
+        this.description = description;
+        this.photo = photo;
+        this.invoice = invoice;
         this.info = info;
         this.shipping = shipping;
+        this.tipAmount = tipAmount;
         this.currency = currency;
         this.totalAmount = totalAmount;
         this.credentialsTitle = credentialsTitle;
@@ -77,8 +76,10 @@ public class TLPaymentReceipt extends TLObject {
 
     private void computeFlags() {
         flags = 0;
+        flags = photo != null ? (flags | 4) : (flags & ~4);
         flags = info != null ? (flags | 1) : (flags & ~1);
         flags = shipping != null ? (flags | 2) : (flags & ~2);
+        flags = tipAmount != null ? (flags | 8) : (flags & ~8);
     }
 
     @Override
@@ -87,9 +88,15 @@ public class TLPaymentReceipt extends TLObject {
 
         writeInt(flags, stream);
         writeInt(date, stream);
-        writeInt(botId, stream);
+        writeLong(botId, stream);
+        writeLong(providerId, stream);
+        writeString(title, stream);
+        writeString(description, stream);
+        if ((flags & 4) != 0) {
+            if (photo == null) throwNullFieldException("photo", flags);
+            writeTLObject(photo, stream);
+        }
         writeTLObject(invoice, stream);
-        writeInt(providerId, stream);
         if ((flags & 1) != 0) {
             if (info == null) throwNullFieldException("info", flags);
             writeTLObject(info, stream);
@@ -97,6 +104,10 @@ public class TLPaymentReceipt extends TLObject {
         if ((flags & 2) != 0) {
             if (shipping == null) throwNullFieldException("shipping", flags);
             writeTLObject(shipping, stream);
+        }
+        if ((flags & 8) != 0) {
+            if (tipAmount == null) throwNullFieldException("tipAmount", flags);
+            writeLong(tipAmount, stream);
         }
         writeString(currency, stream);
         writeLong(totalAmount, stream);
@@ -109,13 +120,15 @@ public class TLPaymentReceipt extends TLObject {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         date = readInt(stream);
-        botId = readInt(stream);
+        botId = readLong(stream);
+        providerId = readLong(stream);
+        title = readTLString(stream);
+        description = readTLString(stream);
+        photo = (flags & 4) != 0 ? readTLObject(stream, context, TLAbsWebDocument.class, -1) : null;
         invoice = readTLObject(stream, context, TLInvoice.class, TLInvoice.CONSTRUCTOR_ID);
-        providerId = readInt(stream);
-        info = (flags & 1) != 0 ? readTLObject(stream, context, TLPaymentRequestedInfo.class,
-                                               TLPaymentRequestedInfo.CONSTRUCTOR_ID) : null;
-        shipping = (flags & 2) != 0 ? readTLObject(stream, context, TLShippingOption.class,
-                                                   TLShippingOption.CONSTRUCTOR_ID) : null;
+        info = (flags & 1) != 0 ? readTLObject(stream, context, TLPaymentRequestedInfo.class, TLPaymentRequestedInfo.CONSTRUCTOR_ID) : null;
+        shipping = (flags & 2) != 0 ? readTLObject(stream, context, TLShippingOption.class, TLShippingOption.CONSTRUCTOR_ID) : null;
+        tipAmount = (flags & 8) != 0 ? readLong(stream) : null;
         currency = readTLString(stream);
         totalAmount = readLong(stream);
         credentialsTitle = readTLString(stream);
@@ -129,9 +142,15 @@ public class TLPaymentReceipt extends TLObject {
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
         size += SIZE_INT32;
-        size += SIZE_INT32;
+        size += SIZE_INT64;
+        size += SIZE_INT64;
+        size += computeTLStringSerializedSize(title);
+        size += computeTLStringSerializedSize(description);
+        if ((flags & 4) != 0) {
+            if (photo == null) throwNullFieldException("photo", flags);
+            size += photo.computeSerializedSize();
+        }
         size += invoice.computeSerializedSize();
-        size += SIZE_INT32;
         if ((flags & 1) != 0) {
             if (info == null) throwNullFieldException("info", flags);
             size += info.computeSerializedSize();
@@ -139,6 +158,10 @@ public class TLPaymentReceipt extends TLObject {
         if ((flags & 2) != 0) {
             if (shipping == null) throwNullFieldException("shipping", flags);
             size += shipping.computeSerializedSize();
+        }
+        if ((flags & 8) != 0) {
+            if (tipAmount == null) throwNullFieldException("tipAmount", flags);
+            size += SIZE_INT64;
         }
         size += computeTLStringSerializedSize(currency);
         size += SIZE_INT64;
@@ -165,12 +188,44 @@ public class TLPaymentReceipt extends TLObject {
         this.date = date;
     }
 
-    public int getBotId() {
+    public long getBotId() {
         return botId;
     }
 
-    public void setBotId(int botId) {
+    public void setBotId(long botId) {
         this.botId = botId;
+    }
+
+    public long getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(long providerId) {
+        this.providerId = providerId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public TLAbsWebDocument getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(TLAbsWebDocument photo) {
+        this.photo = photo;
     }
 
     public TLInvoice getInvoice() {
@@ -179,14 +234,6 @@ public class TLPaymentReceipt extends TLObject {
 
     public void setInvoice(TLInvoice invoice) {
         this.invoice = invoice;
-    }
-
-    public int getProviderId() {
-        return providerId;
-    }
-
-    public void setProviderId(int providerId) {
-        this.providerId = providerId;
     }
 
     public TLPaymentRequestedInfo getInfo() {
@@ -203,6 +250,14 @@ public class TLPaymentReceipt extends TLObject {
 
     public void setShipping(TLShippingOption shipping) {
         this.shipping = shipping;
+    }
+
+    public Long getTipAmount() {
+        return tipAmount;
+    }
+
+    public void setTipAmount(Long tipAmount) {
+        this.tipAmount = tipAmount;
     }
 
     public String getCurrency() {

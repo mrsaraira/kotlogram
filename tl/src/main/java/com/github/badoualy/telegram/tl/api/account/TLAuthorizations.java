@@ -1,51 +1,53 @@
 package com.github.badoualy.telegram.tl.api.account;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAuthorization;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLAuthorizations extends TLObject {
+    public static final int CONSTRUCTOR_ID = 0x4bff8ea0;
 
-    public static final int CONSTRUCTOR_ID = 0x1250abde;
+    protected int authorizationTtlDays;
 
     protected TLVector<TLAuthorization> authorizations;
 
-    private final String _constructor = "account.authorizations#1250abde";
+    private final String _constructor = "account.authorizations#4bff8ea0";
 
     public TLAuthorizations() {
     }
 
-    public TLAuthorizations(TLVector<TLAuthorization> authorizations) {
+    public TLAuthorizations(int authorizationTtlDays, TLVector<TLAuthorization> authorizations) {
+        this.authorizationTtlDays = authorizationTtlDays;
         this.authorizations = authorizations;
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
+        writeInt(authorizationTtlDays, stream);
         writeTLVector(authorizations, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
+        authorizationTtlDays = readInt(stream);
         authorizations = readTLVector(stream, context);
     }
 
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
+        size += SIZE_INT32;
         size += authorizations.computeSerializedSize();
         return size;
     }
@@ -58,6 +60,14 @@ public class TLAuthorizations extends TLObject {
     @Override
     public int getConstructorId() {
         return CONSTRUCTOR_ID;
+    }
+
+    public int getAuthorizationTtlDays() {
+        return authorizationTtlDays;
+    }
+
+    public void setAuthorizationTtlDays(int authorizationTtlDays) {
+        this.authorizationTtlDays = authorizationTtlDays;
     }
 
     public TLVector<TLAuthorization> getAuthorizations() {

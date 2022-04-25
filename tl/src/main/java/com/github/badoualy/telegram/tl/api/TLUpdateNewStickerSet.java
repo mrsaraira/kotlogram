@@ -1,32 +1,28 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.api.messages.TLStickerSet;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.messages.TLAbsStickerSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLUpdateNewStickerSet extends TLAbsUpdate {
-
     public static final int CONSTRUCTOR_ID = 0x688a30aa;
 
-    protected TLStickerSet stickerset;
+    protected TLAbsStickerSet stickerset;
 
     private final String _constructor = "updateNewStickerSet#688a30aa";
 
     public TLUpdateNewStickerSet() {
     }
 
-    public TLUpdateNewStickerSet(TLStickerSet stickerset) {
+    public TLUpdateNewStickerSet(TLAbsStickerSet stickerset) {
         this.stickerset = stickerset;
     }
 
@@ -38,7 +34,7 @@ public class TLUpdateNewStickerSet extends TLAbsUpdate {
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        stickerset = readTLObject(stream, context, TLStickerSet.class, TLStickerSet.CONSTRUCTOR_ID);
+        stickerset = readTLObject(stream, context, TLAbsStickerSet.class, -1);
     }
 
     @Override
@@ -58,11 +54,11 @@ public class TLUpdateNewStickerSet extends TLAbsUpdate {
         return CONSTRUCTOR_ID;
     }
 
-    public TLStickerSet getStickerset() {
+    public TLAbsStickerSet getStickerset() {
         return stickerset;
     }
 
-    public void setStickerset(TLStickerSet stickerset) {
+    public void setStickerset(TLAbsStickerSet stickerset) {
         this.stickerset = stickerset;
     }
 }

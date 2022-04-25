@@ -1,5 +1,8 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
 import com.github.badoualy.telegram.tl.api.TLAbsUpdates;
@@ -7,28 +10,16 @@ import com.github.badoualy.telegram.tl.core.TLIntVector;
 import com.github.badoualy.telegram.tl.core.TLLongVector;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLIntVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLLongVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
-
-    public static final int CONSTRUCTOR_ID = 0x708e0195;
+    public static final int CONSTRUCTOR_ID = 0xcc30290b;
 
     protected int flags;
 
@@ -38,6 +29,12 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
 
     protected boolean withMyScore;
 
+    protected boolean dropAuthor;
+
+    protected boolean dropMediaCaptions;
+
+    protected boolean noforwards;
+
     protected TLAbsInputPeer fromPeer;
 
     protected TLIntVector id;
@@ -46,19 +43,28 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
 
     protected TLAbsInputPeer toPeer;
 
-    private final String _constructor = "messages.forwardMessages#708e0195";
+    protected Integer scheduleDate;
+
+    protected TLAbsInputPeer sendAs;
+
+    private final String _constructor = "messages.forwardMessages#cc30290b";
 
     public TLRequestMessagesForwardMessages() {
     }
 
-    public TLRequestMessagesForwardMessages(boolean silent, boolean background, boolean withMyScore, TLAbsInputPeer fromPeer, TLIntVector id, TLLongVector randomId, TLAbsInputPeer toPeer) {
+    public TLRequestMessagesForwardMessages(boolean silent, boolean background, boolean withMyScore, boolean dropAuthor, boolean dropMediaCaptions, boolean noforwards, TLAbsInputPeer fromPeer, TLIntVector id, TLLongVector randomId, TLAbsInputPeer toPeer, Integer scheduleDate, TLAbsInputPeer sendAs) {
         this.silent = silent;
         this.background = background;
         this.withMyScore = withMyScore;
+        this.dropAuthor = dropAuthor;
+        this.dropMediaCaptions = dropMediaCaptions;
+        this.noforwards = noforwards;
         this.fromPeer = fromPeer;
         this.id = id;
         this.randomId = randomId;
         this.toPeer = toPeer;
+        this.scheduleDate = scheduleDate;
+        this.sendAs = sendAs;
     }
 
     @Override
@@ -69,9 +75,7 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsUpdates)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsUpdates) response;
     }
@@ -81,6 +85,11 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
         flags = silent ? (flags | 32) : (flags & ~32);
         flags = background ? (flags | 64) : (flags & ~64);
         flags = withMyScore ? (flags | 256) : (flags & ~256);
+        flags = dropAuthor ? (flags | 2048) : (flags & ~2048);
+        flags = dropMediaCaptions ? (flags | 4096) : (flags & ~4096);
+        flags = noforwards ? (flags | 16384) : (flags & ~16384);
+        flags = scheduleDate != null ? (flags | 1024) : (flags & ~1024);
+        flags = sendAs != null ? (flags | 8192) : (flags & ~8192);
     }
 
     @Override
@@ -92,6 +101,14 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
         writeTLVector(id, stream);
         writeTLVector(randomId, stream);
         writeTLObject(toPeer, stream);
+        if ((flags & 1024) != 0) {
+            if (scheduleDate == null) throwNullFieldException("scheduleDate", flags);
+            writeInt(scheduleDate, stream);
+        }
+        if ((flags & 8192) != 0) {
+            if (sendAs == null) throwNullFieldException("sendAs", flags);
+            writeTLObject(sendAs, stream);
+        }
     }
 
     @Override
@@ -101,10 +118,15 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
         silent = (flags & 32) != 0;
         background = (flags & 64) != 0;
         withMyScore = (flags & 256) != 0;
+        dropAuthor = (flags & 2048) != 0;
+        dropMediaCaptions = (flags & 4096) != 0;
+        noforwards = (flags & 16384) != 0;
         fromPeer = readTLObject(stream, context, TLAbsInputPeer.class, -1);
         id = readTLIntVector(stream, context);
         randomId = readTLLongVector(stream, context);
         toPeer = readTLObject(stream, context, TLAbsInputPeer.class, -1);
+        scheduleDate = (flags & 1024) != 0 ? readInt(stream) : null;
+        sendAs = (flags & 8192) != 0 ? readTLObject(stream, context, TLAbsInputPeer.class, -1) : null;
     }
 
     @Override
@@ -117,6 +139,14 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
         size += id.computeSerializedSize();
         size += randomId.computeSerializedSize();
         size += toPeer.computeSerializedSize();
+        if ((flags & 1024) != 0) {
+            if (scheduleDate == null) throwNullFieldException("scheduleDate", flags);
+            size += SIZE_INT32;
+        }
+        if ((flags & 8192) != 0) {
+            if (sendAs == null) throwNullFieldException("sendAs", flags);
+            size += sendAs.computeSerializedSize();
+        }
         return size;
     }
 
@@ -154,6 +184,30 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
         this.withMyScore = withMyScore;
     }
 
+    public boolean getDropAuthor() {
+        return dropAuthor;
+    }
+
+    public void setDropAuthor(boolean dropAuthor) {
+        this.dropAuthor = dropAuthor;
+    }
+
+    public boolean getDropMediaCaptions() {
+        return dropMediaCaptions;
+    }
+
+    public void setDropMediaCaptions(boolean dropMediaCaptions) {
+        this.dropMediaCaptions = dropMediaCaptions;
+    }
+
+    public boolean getNoforwards() {
+        return noforwards;
+    }
+
+    public void setNoforwards(boolean noforwards) {
+        this.noforwards = noforwards;
+    }
+
     public TLAbsInputPeer getFromPeer() {
         return fromPeer;
     }
@@ -184,5 +238,21 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
 
     public void setToPeer(TLAbsInputPeer toPeer) {
         this.toPeer = toPeer;
+    }
+
+    public Integer getScheduleDate() {
+        return scheduleDate;
+    }
+
+    public void setScheduleDate(Integer scheduleDate) {
+        this.scheduleDate = scheduleDate;
+    }
+
+    public TLAbsInputPeer getSendAs() {
+        return sendAs;
+    }
+
+    public void setSendAs(TLAbsInputPeer sendAs) {
+        this.sendAs = sendAs;
     }
 }

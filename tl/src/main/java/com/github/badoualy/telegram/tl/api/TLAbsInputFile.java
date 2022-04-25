@@ -1,6 +1,10 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.core.TLObject;
+import java.lang.String;
 
 /**
  * Abstraction level for the following constructors:
@@ -9,11 +13,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
  * <li>{@link TLInputFileBig}: inputFileBig#fa4f0bb5</li>
  * </ul>
  *
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public abstract class TLAbsInputFile extends TLObject {
-
     protected long id;
 
     protected int parts;

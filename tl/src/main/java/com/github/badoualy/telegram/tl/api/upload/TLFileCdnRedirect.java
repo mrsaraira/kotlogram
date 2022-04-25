@@ -1,27 +1,21 @@
 package com.github.badoualy.telegram.tl.api.upload;
 
-import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.core.TLBytes;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.TLFileHash;
+import com.github.badoualy.telegram.tl.core.TLBytes;
+import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLFileCdnRedirect extends TLAbsFile {
-
-    public static final int CONSTRUCTOR_ID = 0x1508485a;
+    public static final int CONSTRUCTOR_ID = 0xf18cda44;
 
     protected int dcId;
 
@@ -31,16 +25,19 @@ public class TLFileCdnRedirect extends TLAbsFile {
 
     protected TLBytes encryptionIv;
 
-    private final String _constructor = "upload.fileCdnRedirect#1508485a";
+    protected TLVector<TLFileHash> fileHashes;
+
+    private final String _constructor = "upload.fileCdnRedirect#f18cda44";
 
     public TLFileCdnRedirect() {
     }
 
-    public TLFileCdnRedirect(int dcId, TLBytes fileToken, TLBytes encryptionKey, TLBytes encryptionIv) {
+    public TLFileCdnRedirect(int dcId, TLBytes fileToken, TLBytes encryptionKey, TLBytes encryptionIv, TLVector<TLFileHash> fileHashes) {
         this.dcId = dcId;
         this.fileToken = fileToken;
         this.encryptionKey = encryptionKey;
         this.encryptionIv = encryptionIv;
+        this.fileHashes = fileHashes;
     }
 
     @Override
@@ -49,6 +46,7 @@ public class TLFileCdnRedirect extends TLAbsFile {
         writeTLBytes(fileToken, stream);
         writeTLBytes(encryptionKey, stream);
         writeTLBytes(encryptionIv, stream);
+        writeTLVector(fileHashes, stream);
     }
 
     @Override
@@ -58,6 +56,7 @@ public class TLFileCdnRedirect extends TLAbsFile {
         fileToken = readTLBytes(stream, context);
         encryptionKey = readTLBytes(stream, context);
         encryptionIv = readTLBytes(stream, context);
+        fileHashes = readTLVector(stream, context);
     }
 
     @Override
@@ -67,6 +66,7 @@ public class TLFileCdnRedirect extends TLAbsFile {
         size += computeTLBytesSerializedSize(fileToken);
         size += computeTLBytesSerializedSize(encryptionKey);
         size += computeTLBytesSerializedSize(encryptionIv);
+        size += fileHashes.computeSerializedSize();
         return size;
     }
 
@@ -110,5 +110,13 @@ public class TLFileCdnRedirect extends TLAbsFile {
 
     public void setEncryptionIv(TLBytes encryptionIv) {
         this.encryptionIv = encryptionIv;
+    }
+
+    public TLVector<TLFileHash> getFileHashes() {
+        return fileHashes;
+    }
+
+    public void setFileHashes(TLVector<TLFileHash> fileHashes) {
+        this.fileHashes = fileHashes;
     }
 }

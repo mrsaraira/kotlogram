@@ -1,30 +1,22 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLLongVector;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Long;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
-
-/**
- * @author Yannick Badoual yann.badoual@gmail.com
- * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
- */
 public class TLInvoice extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0xc30aa358;
+    public static final int CONSTRUCTOR_ID = 0xcd886e0;
 
     protected int flags;
 
@@ -40,24 +32,36 @@ public class TLInvoice extends TLObject {
 
     protected boolean flexible;
 
+    protected boolean phoneToProvider;
+
+    protected boolean emailToProvider;
+
     protected String currency;
 
     protected TLVector<TLLabeledPrice> prices;
 
-    private final String _constructor = "invoice#c30aa358";
+    protected Long maxTipAmount;
+
+    protected TLLongVector suggestedTipAmounts;
+
+    private final String _constructor = "invoice#cd886e0";
 
     public TLInvoice() {
     }
 
-    public TLInvoice(boolean test, boolean nameRequested, boolean phoneRequested, boolean emailRequested, boolean shippingAddressRequested, boolean flexible, String currency, TLVector<TLLabeledPrice> prices) {
+    public TLInvoice(boolean test, boolean nameRequested, boolean phoneRequested, boolean emailRequested, boolean shippingAddressRequested, boolean flexible, boolean phoneToProvider, boolean emailToProvider, String currency, TLVector<TLLabeledPrice> prices, Long maxTipAmount, TLLongVector suggestedTipAmounts) {
         this.test = test;
         this.nameRequested = nameRequested;
         this.phoneRequested = phoneRequested;
         this.emailRequested = emailRequested;
         this.shippingAddressRequested = shippingAddressRequested;
         this.flexible = flexible;
+        this.phoneToProvider = phoneToProvider;
+        this.emailToProvider = emailToProvider;
         this.currency = currency;
         this.prices = prices;
+        this.maxTipAmount = maxTipAmount;
+        this.suggestedTipAmounts = suggestedTipAmounts;
     }
 
     private void computeFlags() {
@@ -68,6 +72,10 @@ public class TLInvoice extends TLObject {
         flags = emailRequested ? (flags | 8) : (flags & ~8);
         flags = shippingAddressRequested ? (flags | 16) : (flags & ~16);
         flags = flexible ? (flags | 32) : (flags & ~32);
+        flags = phoneToProvider ? (flags | 64) : (flags & ~64);
+        flags = emailToProvider ? (flags | 128) : (flags & ~128);
+        flags = maxTipAmount != null ? (flags | 256) : (flags & ~256);
+        flags = suggestedTipAmounts != null ? (flags | 256) : (flags & ~256);
     }
 
     @Override
@@ -77,6 +85,14 @@ public class TLInvoice extends TLObject {
         writeInt(flags, stream);
         writeString(currency, stream);
         writeTLVector(prices, stream);
+        if ((flags & 256) != 0) {
+            if (maxTipAmount == null) throwNullFieldException("maxTipAmount", flags);
+            writeLong(maxTipAmount, stream);
+        }
+        if ((flags & 256) != 0) {
+            if (suggestedTipAmounts == null) throwNullFieldException("suggestedTipAmounts", flags);
+            writeTLVector(suggestedTipAmounts, stream);
+        }
     }
 
     @Override
@@ -89,8 +105,12 @@ public class TLInvoice extends TLObject {
         emailRequested = (flags & 8) != 0;
         shippingAddressRequested = (flags & 16) != 0;
         flexible = (flags & 32) != 0;
+        phoneToProvider = (flags & 64) != 0;
+        emailToProvider = (flags & 128) != 0;
         currency = readTLString(stream);
         prices = readTLVector(stream, context);
+        maxTipAmount = (flags & 256) != 0 ? readLong(stream) : null;
+        suggestedTipAmounts = (flags & 256) != 0 ? readTLLongVector(stream, context) : null;
     }
 
     @Override
@@ -101,6 +121,14 @@ public class TLInvoice extends TLObject {
         size += SIZE_INT32;
         size += computeTLStringSerializedSize(currency);
         size += prices.computeSerializedSize();
+        if ((flags & 256) != 0) {
+            if (maxTipAmount == null) throwNullFieldException("maxTipAmount", flags);
+            size += SIZE_INT64;
+        }
+        if ((flags & 256) != 0) {
+            if (suggestedTipAmounts == null) throwNullFieldException("suggestedTipAmounts", flags);
+            size += suggestedTipAmounts.computeSerializedSize();
+        }
         return size;
     }
 
@@ -162,6 +190,22 @@ public class TLInvoice extends TLObject {
         this.flexible = flexible;
     }
 
+    public boolean getPhoneToProvider() {
+        return phoneToProvider;
+    }
+
+    public void setPhoneToProvider(boolean phoneToProvider) {
+        this.phoneToProvider = phoneToProvider;
+    }
+
+    public boolean getEmailToProvider() {
+        return emailToProvider;
+    }
+
+    public void setEmailToProvider(boolean emailToProvider) {
+        this.emailToProvider = emailToProvider;
+    }
+
     public String getCurrency() {
         return currency;
     }
@@ -176,5 +220,21 @@ public class TLInvoice extends TLObject {
 
     public void setPrices(TLVector<TLLabeledPrice> prices) {
         this.prices = prices;
+    }
+
+    public Long getMaxTipAmount() {
+        return maxTipAmount;
+    }
+
+    public void setMaxTipAmount(Long maxTipAmount) {
+        this.maxTipAmount = maxTipAmount;
+    }
+
+    public TLLongVector getSuggestedTipAmounts() {
+        return suggestedTipAmounts;
+    }
+
+    public void setSuggestedTipAmounts(TLLongVector suggestedTipAmounts) {
+        this.suggestedTipAmounts = suggestedTipAmounts;
     }
 }
